@@ -80,6 +80,52 @@ const REVIEWS = [
   },
 ];
 
+function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose: () => void }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.9)", backdropFilter: "blur(12px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-4xl animate-fade-in"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute -top-12 right-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors z-10"
+          style={{ background: "rgba(255,255,255,0.1)" }}
+        >
+          <Icon name="X" size={18} className="text-white" />
+        </button>
+
+        <div className="rounded-2xl overflow-hidden"
+          style={{ border: `1px solid ${item.color}40`, boxShadow: `0 0 60px ${item.color}30` }}>
+          <img src={item.img} alt={item.title} className="w-full h-auto block" />
+        </div>
+
+        <div className="flex items-center justify-between mt-4 px-1">
+          <div>
+            <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: item.color }}>{item.category}</span>
+            <h3 className="font-oswald font-bold text-2xl text-white mt-0.5">{item.title}</h3>
+          </div>
+          <div className="text-white/30 text-sm">ESC — закрыть</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function PrivacyModal({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -230,6 +276,7 @@ export default function Index() {
   const [form, setForm] = useState({ name: "", phone: "", comment: "" });
   const [submitted, setSubmitted] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
+  const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
 
   const scrollToForm = () => {
@@ -244,6 +291,7 @@ export default function Index() {
   return (
     <div className="noise-bg min-h-screen bg-[#09090f] text-white overflow-x-hidden">
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
+      {activePortfolio && <PortfolioModal item={activePortfolio} onClose={() => setActivePortfolio(null)} />}
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
@@ -388,12 +436,15 @@ export default function Index() {
                     style={{ color: item.color }}>{item.category}</span>
                   <h3 className="font-oswald font-bold text-2xl text-white">{item.title}</h3>
                 </div>
-                <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0">
+                <button
+                  onClick={() => setActivePortfolio(item)}
+                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+                >
                   <div className="w-10 h-10 rounded-full flex items-center justify-center"
                     style={{ background: item.color }}>
                     <Icon name="ArrowUpRight" size={18} className="text-white" />
                   </div>
-                </div>
+                </button>
               </div>
             ))}
           </div>
