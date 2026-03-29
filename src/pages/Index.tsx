@@ -119,7 +119,14 @@ function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose:
             <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: item.color }}>{item.category}</span>
             <h3 className="font-oswald font-bold text-2xl text-white mt-0.5">{item.title}</h3>
           </div>
-          <div className="text-white/30 text-sm">ESC — закрыть</div>
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
+            style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)" }}
+          >
+            <Icon name="ArrowLeft" size={16} />
+            Назад
+          </button>
         </div>
       </div>
     </div>
