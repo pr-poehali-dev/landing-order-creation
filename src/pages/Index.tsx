@@ -532,7 +532,14 @@ export default function Index() {
                   Отправить заявку
                 </button>
                 <p className="text-center text-white/30 text-xs">
-                  Нажимая кнопку, вы соглашаетесь с политикой конфиденциальности
+                  Нажимая кнопку, вы соглашаетесь с{" "}
+                  <button
+                    type="button"
+                    onClick={() => setShowPrivacy(true)}
+                    className="underline underline-offset-2 hover:text-white/60 transition-colors"
+                  >
+                    политикой конфиденциальности
+                  </button>
                 </p>
               </form>
             )}
