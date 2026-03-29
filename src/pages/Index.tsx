@@ -20,6 +20,12 @@ const PORTFOLIO = [
     img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/6dc6fe87-8aa7-4754-944b-9c92d29d4c63.jpg",
     color: "#f72585",
   },
+  {
+    title: "Языковая студия",
+    category: "Образование",
+    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/d449a997-9a87-46a4-a01c-889cfb4145de.jpg",
+    color: "#facc15",
+  },
 ];
 
 const ADVANTAGES = [
