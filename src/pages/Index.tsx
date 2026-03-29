@@ -62,6 +62,102 @@ const REVIEWS = [
   },
 ];
 
+function PrivacyModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ background: "rgba(0,0,0,0.8)", backdropFilter: "blur(8px)" }}
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-3xl p-8 animate-fade-in"
+        style={{
+          background: "rgba(18,18,28,0.98)",
+          border: "1px solid rgba(168,85,247,0.2)",
+          boxShadow: "0 0 60px rgba(168,85,247,0.15)",
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 w-9 h-9 rounded-full flex items-center justify-center transition-colors"
+          style={{ background: "rgba(255,255,255,0.07)" }}
+        >
+          <Icon name="X" size={16} className="text-white/60" />
+        </button>
+
+        <h2 className="font-oswald font-black text-3xl mb-6 gradient-text">Политика конфиденциальности</h2>
+
+        <div className="space-y-5 text-white/60 text-sm leading-relaxed">
+          <p className="text-white/40 text-xs">Последнее обновление: 1 января 2026 г.</p>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">1. Общие положения</h3>
+            <p>Настоящая политика конфиденциальности регулирует порядок обработки персональных данных пользователей сайта LandingGuru.ru (далее — «Сайт»). Используя Сайт, вы соглашаетесь с условиями данной политики.</p>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">2. Какие данные мы собираем</h3>
+            <p>Мы собираем только те данные, которые вы предоставляете самостоятельно при заполнении формы обратной связи:</p>
+            <ul className="list-disc list-inside mt-2 space-y-1 pl-2">
+              <li>Имя и фамилия</li>
+              <li>Номер телефона</li>
+              <li>Комментарий или описание проекта</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">3. Цели обработки данных</h3>
+            <p>Ваши данные используются исключительно для:</p>
+            <ul className="list-disc list-inside mt-2 space-y-1 pl-2">
+              <li>Обратной связи с вами по вашему запросу</li>
+              <li>Консультации по вашему проекту</li>
+              <li>Оформления договора на оказание услуг</li>
+            </ul>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">4. Хранение и защита данных</h3>
+            <p>Мы не передаём ваши персональные данные третьим лицам без вашего согласия. Данные хранятся на защищённых серверах и используются только сотрудниками компании.</p>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">5. Использование cookies</h3>
+            <p>Сайт использует cookies для анализа трафика (Яндекс.Метрика, Google Analytics). Вы можете отключить cookies в настройках браузера, однако это может повлиять на работу сайта.</p>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">6. Ваши права</h3>
+            <p>Вы вправе в любой момент запросить удаление своих данных, написав нам на электронную почту. Запрос будет обработан в течение 10 рабочих дней.</p>
+          </section>
+
+          <section>
+            <h3 className="font-semibold text-white mb-2">7. Контакты</h3>
+            <p>По вопросам, связанным с обработкой персональных данных, обращайтесь: <span className="text-purple-400">info@landingguru.ru</span></p>
+          </section>
+        </div>
+
+        <button
+          onClick={onClose}
+          className="btn-glow mt-8 w-full py-3 rounded-xl text-white font-semibold"
+        >
+          Понятно
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function useReveal() {
   useEffect(() => {
     const els = document.querySelectorAll(".section-reveal");
@@ -92,6 +188,7 @@ export default function Index() {
   useReveal();
   const [form, setForm] = useState({ name: "", phone: "", comment: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
   const scrollToForm = () => {
@@ -105,6 +202,7 @@ export default function Index() {
 
   return (
     <div className="noise-bg min-h-screen bg-[#09090f] text-white overflow-x-hidden">
+      {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
@@ -439,7 +537,7 @@ export default function Index() {
           </div>
           <p className="text-white/30 text-sm">© 2026 LandingGuru.ru. Все права защищены.</p>
           <div className="flex gap-6 text-sm text-white/40">
-            <a href="#" className="hover:text-white/70 transition-colors">Политика конфиденциальности</a>
+            <button onClick={() => setShowPrivacy(true)} className="hover:text-white/70 transition-colors">Политика конфиденциальности</button>
           </div>
         </div>
       </footer>
