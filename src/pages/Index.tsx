@@ -437,7 +437,7 @@ export default function Index() {
             </div>
             <span className="font-oswald font-bold tracking-wide">LANDINGGURU.RU</span>
           </div>
-          <p className="text-white/30 text-sm">© 2024 LandingGuru.ru. Все права защищены.</p>
+          <p className="text-white/30 text-sm">© 2026 LandingGuru.ru. Все права защищены.</p>
           <div className="flex gap-6 text-sm text-white/40">
             <a href="#" className="hover:text-white/70 transition-colors">Политика конфиденциальности</a>
           </div>
