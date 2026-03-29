@@ -113,7 +113,7 @@ export default function Index() {
           <div className="w-8 h-8 rounded-lg btn-glow flex items-center justify-center">
             <Icon name="Globe" size={16} className="text-white" />
           </div>
-          <span className="font-oswald font-bold text-lg tracking-wide">ЛЕНДИНГ.ПРО</span>
+          <span className="font-oswald font-bold text-lg tracking-wide">LANDINGGURU.RU</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
           <a href="#advantages" className="hover:text-white transition-colors">Преимущества</a>
@@ -435,9 +435,9 @@ export default function Index() {
             <div className="w-7 h-7 rounded-lg btn-glow flex items-center justify-center">
               <Icon name="Globe" size={14} className="text-white" />
             </div>
-            <span className="font-oswald font-bold tracking-wide">ЛЕНДИНГ.ПРО</span>
+            <span className="font-oswald font-bold tracking-wide">LANDINGGURU.RU</span>
           </div>
-          <p className="text-white/30 text-sm">© 2024 Лендинг.Про. Все права защищены.</p>
+          <p className="text-white/30 text-sm">© 2024 LandingGuru.ru. Все права защищены.</p>
           <div className="flex gap-6 text-sm text-white/40">
             <a href="#" className="hover:text-white/70 transition-colors">Политика конфиденциальности</a>
           </div>
