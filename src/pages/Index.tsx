@@ -103,10 +103,11 @@ function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose:
       >
         <button
           onClick={onClose}
-          className="absolute -top-12 right-0 w-10 h-10 rounded-full flex items-center justify-center transition-colors z-10"
-          style={{ background: "rgba(255,255,255,0.1)" }}
+          className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold z-10 transition-all hover:opacity-90"
+          style={{ background: "rgba(0,0,0,0.5)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.8)" }}
         >
-          <Icon name="X" size={18} className="text-white" />
+          <Icon name="ArrowLeft" size={15} />
+          Назад
         </button>
 
         <div className="rounded-2xl overflow-hidden"
@@ -119,14 +120,7 @@ function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose:
             <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: item.color }}>{item.category}</span>
             <h3 className="font-oswald font-bold text-2xl text-white mt-0.5">{item.title}</h3>
           </div>
-          <button
-            onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors"
-            style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)" }}
-          >
-            <Icon name="ArrowLeft" size={16} />
-            Назад
-          </button>
+          <div className="text-white/30 text-sm">ESC — закрыть</div>
         </div>
       </div>
     </div>
