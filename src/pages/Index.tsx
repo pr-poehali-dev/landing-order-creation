@@ -101,17 +101,9 @@ function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose:
         className="relative w-full max-w-4xl animate-fade-in"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative rounded-2xl overflow-hidden"
+        <div className="rounded-2xl overflow-hidden"
           style={{ border: `1px solid ${item.color}40`, boxShadow: `0 0 60px ${item.color}30` }}>
           <img src={item.img} alt={item.title} className="w-full h-auto block" />
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold z-10 transition-all hover:opacity-90"
-            style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.9)" }}
-          >
-            <Icon name="ArrowLeft" size={15} />
-            Назад
-          </button>
         </div>
 
         <div className="flex items-center justify-between mt-4 px-1">
@@ -119,7 +111,14 @@ function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose:
             <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: item.color }}>{item.category}</span>
             <h3 className="font-oswald font-bold text-2xl text-white mt-0.5">{item.title}</h3>
           </div>
-          <div className="text-white/30 text-sm">ESC — закрыть</div>
+          <button
+            onClick={onClose}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-80"
+            style={{ background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.8)" }}
+          >
+            <Icon name="ArrowLeft" size={15} />
+            Назад
+          </button>
         </div>
       </div>
     </div>
