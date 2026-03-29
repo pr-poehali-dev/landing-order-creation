@@ -26,6 +26,18 @@ const PORTFOLIO = [
     img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/d449a997-9a87-46a4-a01c-889cfb4145de.jpg",
     color: "#facc15",
   },
+  {
+    title: "Бьюти-Мастер",
+    category: "Красота",
+    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/738e755f-3a45-4147-b48d-6ff7a6961f36.jpg",
+    color: "#fb7185",
+  },
+  {
+    title: "Барбер Шоп",
+    category: "Барбершоп",
+    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/ca4cde6f-570e-4c04-9693-f6b70c9bfc80.jpg",
+    color: "#d97706",
+  },
 ];
 
 const ADVANTAGES = [
