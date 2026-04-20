@@ -143,7 +143,7 @@ function PrivacyModal({ onClose }: { onClose: () => void }) {
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-2xl max-h-[80vh] overflow-y-auto rounded-3xl p-8 animate-fade-in"
+        className="relative w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-2xl sm:rounded-3xl p-5 sm:p-8 animate-fade-in"
         style={{
           background: "rgba(18,18,28,0.98)",
           border: "1px solid rgba(168,85,247,0.2)",
@@ -298,13 +298,13 @@ export default function Index() {
       {activePortfolio && <PortfolioModal item={activePortfolio} onClose={() => setActivePortfolio(null)} />}
 
       {/* NAV */}
-      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4"
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2"
         style={{ background: "rgba(9,9,15,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg btn-glow flex items-center justify-center">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-8 h-8 rounded-lg btn-glow flex items-center justify-center shrink-0">
             <Icon name="Globe" size={16} className="text-white" />
           </div>
-          <span className="font-oswald font-bold text-lg tracking-wide">LANDINGGURU.RU</span>
+          <span className="font-oswald font-bold text-base sm:text-lg tracking-wide truncate">LANDINGGURU.RU</span>
         </div>
         <div className="hidden md:flex items-center gap-8 text-sm text-white/60">
           <a href="#advantages" className="hover:text-white transition-colors">Преимущества</a>
@@ -313,13 +313,13 @@ export default function Index() {
           <a href="#reviews" className="hover:text-white transition-colors">Отзывы</a>
         </div>
         <button onClick={scrollToForm}
-          className="btn-glow px-5 py-2 rounded-full text-sm font-semibold text-white">
+          className="btn-glow px-4 sm:px-5 py-2.5 sm:py-2 rounded-full text-sm font-semibold text-white shrink-0">
           Заказать
         </button>
       </nav>
 
       {/* HERO */}
-      <section className="relative min-h-screen flex items-center justify-center px-6 pt-20">
+      <section className="relative min-h-screen flex items-center justify-center px-4 sm:px-6 pt-16 sm:pt-20 pb-10 sm:pb-0">
         <div className="orb w-[600px] h-[600px] top-[-100px] left-[-200px]"
           style={{ background: "radial-gradient(circle, rgba(168,85,247,0.15) 0%, transparent 70%)" }} />
         <div className="orb w-[500px] h-[500px] bottom-[-100px] right-[-150px]"
@@ -334,7 +334,7 @@ export default function Index() {
             Принимаем заказы · Срок от 5 дней
           </div>
 
-          <h1 className="font-oswald font-black text-6xl md:text-8xl lg:text-9xl leading-none mb-6 animate-fade-in"
+          <h1 className="font-oswald font-black text-5xl sm:text-6xl md:text-8xl lg:text-9xl leading-none mb-6 animate-fade-in"
             style={{ animationDelay: "0.1s" }}>
             ЛЕНДИНГ,
             <br />
@@ -361,7 +361,7 @@ export default function Index() {
             </a>
           </div>
 
-          <div className="grid grid-cols-3 gap-6 mt-20 max-w-xl mx-auto animate-fade-in"
+          <div className="grid grid-cols-3 gap-3 sm:gap-6 mt-12 sm:mt-20 max-w-xl mx-auto animate-fade-in"
             style={{ animationDelay: "0.7s" }}>
             {[["120+", "Проектов"], ["5", "Дней"], ["2.5×", "Конверсия"]].map(([val, label]) => (
               <div key={label} className="text-center">
@@ -380,11 +380,11 @@ export default function Index() {
       </section>
 
       {/* ADVANTAGES */}
-      <section id="advantages" className="py-32 px-6">
+      <section id="advantages" className="py-20 sm:py-32 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16 section-reveal">
             <span className="text-sm font-semibold uppercase tracking-widest text-purple-400 mb-4 block">Почему мы</span>
-            <h2 className="font-oswald font-black text-5xl md:text-6xl mb-4">
+            <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl mb-4">
               НАШИ <span className="gradient-text">ПРЕИМУЩЕСТВА</span>
             </h2>
             <p className="text-white/50 text-lg max-w-xl mx-auto">
@@ -410,13 +410,13 @@ export default function Index() {
       </section>
 
       {/* PORTFOLIO */}
-      <section id="portfolio" className="py-32 px-6 relative">
+      <section id="portfolio" className="py-20 sm:py-32 px-4 sm:px-6 relative">
         <div className="orb w-[400px] h-[400px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{ background: "radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%)" }} />
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16 section-reveal">
             <span className="text-sm font-semibold uppercase tracking-widest text-cyan-400 mb-4 block">Наши работы</span>
-            <h2 className="font-oswald font-black text-5xl md:text-6xl mb-4">
+            <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl mb-4">
               <span className="gradient-text">ПОРТФОЛИО</span>
             </h2>
             <p className="text-white/50 text-lg max-w-xl mx-auto">
@@ -442,7 +442,7 @@ export default function Index() {
                 </div>
                 <button
                   onClick={() => setActivePortfolio(item)}
-                  className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+                  className="absolute top-4 right-4 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-300 sm:translate-y-2 sm:group-hover:translate-y-0"
                 >
                   <div className="w-10 h-10 rounded-full flex items-center justify-center"
                     style={{ background: item.color }}>
@@ -456,11 +456,11 @@ export default function Index() {
       </section>
 
       {/* PROCESS */}
-      <section id="process" className="py-32 px-6">
+      <section id="process" className="py-20 sm:py-32 px-4 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-16 section-reveal">
             <span className="text-sm font-semibold uppercase tracking-widest text-pink-400 mb-4 block">Как мы работаем</span>
-            <h2 className="font-oswald font-black text-5xl md:text-6xl mb-4">
+            <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl mb-4">
               ПРОЦЕСС <span className="gradient-text-pink">РАБОТЫ</span>
             </h2>
             <p className="text-white/50 text-lg max-w-xl mx-auto">
@@ -471,7 +471,7 @@ export default function Index() {
           <div className="space-y-4">
             {PROCESS.map((step, i) => (
               <div key={step.num}
-                className="glass-card glass-card-hover rounded-2xl p-7 flex gap-6 items-start section-reveal"
+                className="glass-card glass-card-hover rounded-2xl p-4 sm:p-7 flex gap-4 sm:gap-6 items-start section-reveal"
                 style={{ transitionDelay: `${i * 0.12}s` }}>
                 <div className="num-badge mt-1">{step.num}</div>
                 <div>
@@ -485,13 +485,13 @@ export default function Index() {
       </section>
 
       {/* REVIEWS */}
-      <section id="reviews" className="py-32 px-6 relative">
+      <section id="reviews" className="py-20 sm:py-32 px-4 sm:px-6 relative">
         <div className="orb w-[500px] h-[500px] bottom-0 right-0"
           style={{ background: "radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)" }} />
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16 section-reveal">
             <span className="text-sm font-semibold uppercase tracking-widest text-yellow-400 mb-4 block">Клиенты о нас</span>
-            <h2 className="font-oswald font-black text-5xl md:text-6xl mb-4">
+            <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl mb-4">
               <span className="gradient-text">ОТЗЫВЫ</span>
             </h2>
           </div>
@@ -520,13 +520,13 @@ export default function Index() {
       </section>
 
       {/* CTA + FORM */}
-      <section id="order" className="py-32 px-6 relative">
+      <section id="order" className="py-20 sm:py-32 px-4 sm:px-6 relative">
         <div className="orb w-[600px] h-[600px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{ background: "radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)" }} />
         <div className="max-w-2xl mx-auto relative z-10" ref={formRef}>
           <div className="text-center mb-12 section-reveal">
             <span className="text-sm font-semibold uppercase tracking-widest text-purple-400 mb-4 block">Начнём прямо сейчас</span>
-            <h2 className="font-oswald font-black text-5xl md:text-6xl mb-4">
+            <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl mb-4">
               ОСТАВЬТЕ <span className="gradient-text">ЗАЯВКУ</span>
             </h2>
             <p className="text-white/50 text-lg">
@@ -534,7 +534,7 @@ export default function Index() {
             </p>
           </div>
 
-          <div className="glass-card rounded-3xl p-8 section-reveal"
+          <div className="glass-card rounded-3xl p-5 sm:p-8 section-reveal"
             style={{ border: "1px solid rgba(168,85,247,0.2)" }}>
             {submitted ? (
               <div className="text-center py-8">
