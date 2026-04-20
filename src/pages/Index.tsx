@@ -471,11 +471,15 @@ export default function Index() {
           <div className="space-y-4">
             {PROCESS.map((step, i) => (
               <div key={step.num}
-                className="glass-card glass-card-hover rounded-2xl p-4 sm:p-7 flex gap-4 sm:gap-6 items-start section-reveal"
-                style={{ transitionDelay: `${i * 0.12}s` }}>
+                className={`glass-card glass-card-hover rounded-2xl p-4 sm:p-7 flex gap-4 sm:gap-6 items-start section-reveal${i === 0 ? " cursor-pointer" : ""}`}
+                style={{ transitionDelay: `${i * 0.12}s` }}
+                onClick={i === 0 ? scrollToForm : undefined}>
                 <div className="num-badge mt-1">{step.num}</div>
-                <div>
-                  <h3 className="font-oswald font-bold text-xl mb-2 text-white">{step.title}</h3>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-oswald font-bold text-xl mb-2 text-white">{step.title}</h3>
+                    {i === 0 && <Icon name="ArrowDown" size={16} className="mb-2 text-purple-400" />}
+                  </div>
                   <p className="text-white/50 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
