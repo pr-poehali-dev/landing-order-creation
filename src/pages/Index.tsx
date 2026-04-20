@@ -282,8 +282,13 @@ export default function Index() {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    await fetch('https://functions.poehali.dev/03da1169-73aa-4c48-b325-94ad3d6e3160', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
     setSubmitted(true);
   };
 
