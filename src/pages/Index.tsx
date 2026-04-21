@@ -642,7 +642,7 @@ export default function Index() {
             </div>
             <span className="font-oswald font-bold tracking-wide">LANDINGGURU.RU</span>
           </div>
-          <p className="text-white/30 text-sm">© 2026 LandingGuru.ru. Все права защищены.</p>
+          <p className="text-white/30 text-sm text-center">© 2026 LandingGuru.ru. Все права защищены.<br className="sm:hidden" /><span className="hidden sm:inline"> · </span>ИНН 352527263810</p>
           <div className="flex gap-6 text-sm text-white/40">
             <button onClick={() => setShowPrivacy(true)} className="hover:text-white/70 transition-colors">Политика конфиденциальности</button>
           </div>
