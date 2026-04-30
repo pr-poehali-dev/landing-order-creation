@@ -635,9 +635,7 @@ export default function Index() {
 
       {/* FOOTER */}
       <footer className="py-10 px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-        <div className="max-w-6xl mx-auto" style={{ color: "#09090f", fontSize: "12px", lineHeight: "1.8", userSelect: "none" }}>
-          #лендинг #landingpage #лендинги #созданиелендинга #разработкалендинга #дизайнлендинга #дизайнсайта #визуал #вебразработка #маркетинг #воронкапродаж #сайтыподключ #разработкасайтов #созданиесайтов #услугидизайнера #фриланс #freelance #заказлендинга #сделаюлендинг
-        </div>
+
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg btn-glow flex items-center justify-center">
