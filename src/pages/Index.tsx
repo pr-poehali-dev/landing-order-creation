@@ -312,10 +312,17 @@ export default function Index() {
           <a href="#process" className="hover:text-white transition-colors">Процесс</a>
           <a href="#reviews" className="hover:text-white transition-colors">Отзывы</a>
         </div>
-        <button onClick={scrollToForm}
-          className="btn-glow px-4 sm:px-5 py-2.5 sm:py-2 rounded-full text-sm font-semibold text-white shrink-0">
-          Заказать
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <a href="/login"
+            className="px-4 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.12)" }}>
+            Вход
+          </a>
+          <button onClick={scrollToForm}
+            className="btn-glow px-4 sm:px-5 py-2.5 sm:py-2 rounded-full text-sm font-semibold text-white">
+            Заказать
+          </button>
+        </div>
       </nav>
 
       {/* HERO */}
