@@ -1,0 +1,1 @@
+INSERT INTO users (name, email, password_hash, is_admin) VALUES ('Администратор', 'sergasvnet@mail.ru', 'c9d8fd4a67cd1afe06c5ea3f9d63350679a3618defcccb32c05b5bcc0fbf4e82', TRUE);
