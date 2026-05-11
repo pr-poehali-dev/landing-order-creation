@@ -22,6 +22,7 @@ def handler(event: dict, context) -> dict:
     body = json.loads(event.get('body') or '{}')
     name = body.get('name', '').strip()
     phone = body.get('phone', '').strip()
+    email = body.get('email', '').strip()
     comment = body.get('comment', '').strip()
 
     if not name or not phone:
@@ -55,6 +56,7 @@ def handler(event: dict, context) -> dict:
                 <td style="padding: 10px; font-weight: bold; background: #f5f5f5; border: 1px solid #ddd;">Телефон</td>
                 <td style="padding: 10px; border: 1px solid #ddd;"><a href="tel:{phone}">{phone}</a></td>
             </tr>
+            {"<tr><td style='padding: 10px; font-weight: bold; background: #f5f5f5; border: 1px solid #ddd;'>Email</td><td style='padding: 10px; border: 1px solid #ddd;'><a href=mailto:" + email + ">" + email + "</a></td></tr>" if email else ""}
             {"<tr><td style='padding: 10px; font-weight: bold; background: #f5f5f5; border: 1px solid #ddd;'>Комментарий</td><td style='padding: 10px; border: 1px solid #ddd;'>" + comment + "</td></tr>" if comment else ""}
         </table>
     </body>

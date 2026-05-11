@@ -272,7 +272,7 @@ function StarRating({ count }: { count: number }) {
 
 export default function Index() {
   useReveal();
-  const [form, setForm] = useState({ name: "", phone: "", comment: "" });
+  const [form, setForm] = useState({ name: "", phone: "", email: "", comment: "" });
   const [submitted, setSubmitted] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
@@ -577,6 +577,23 @@ export default function Index() {
                     placeholder="+7 (___) ___-__-__"
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    className="w-full px-4 py-3.5 rounded-xl text-white placeholder-white/30 outline-none transition-all"
+                    style={{
+                      background: "rgba(255,255,255,0.05)",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      fontFamily: "Golos Text, sans-serif",
+                    }}
+                    onFocus={(e) => (e.target.style.borderColor = "rgba(168,85,247,0.6)")}
+                    onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-white/60 mb-2">Email</label>
+                  <input
+                    type="email"
+                    placeholder="your@email.ru"
+                    value={form.email}
+                    onChange={(e) => setForm({ ...form, email: e.target.value })}
                     className="w-full px-4 py-3.5 rounded-xl text-white placeholder-white/30 outline-none transition-all"
                     style={{
                       background: "rgba(255,255,255,0.05)",
