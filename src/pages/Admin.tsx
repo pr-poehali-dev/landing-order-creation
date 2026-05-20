@@ -117,7 +117,16 @@ export default function Admin() {
   const loadData = async () => {
     const [u, p] = await Promise.all([api.adminGetUsers(), api.adminGetProjects()]);
     setUsers(u.users || []);
-    setProjects(p.projects || []);
+    const projs: Project[] = p.projects || [];
+    setProjects(projs);
+    // Инициализируем baseline счётчиков сразу при загрузке
+    for (const proj of projs) {
+      if (lastMsgCountRef.current[proj.id] === undefined) {
+        const r = await api.getMessages(proj.id);
+        const msgs = r.messages || [];
+        lastMsgCountRef.current[proj.id] = msgs.filter((m: {is_admin: boolean}) => !m.is_admin).length;
+      }
+    }
   };
 
   const openProject = async (p: Project, preloadedMsgs?: {id:number;text:string;author:string;is_admin:boolean}[]) => {

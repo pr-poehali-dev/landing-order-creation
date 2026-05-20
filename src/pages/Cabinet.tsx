@@ -59,9 +59,18 @@ export default function Cabinet() {
       if (res.is_admin) { navigate('/admin'); return; }
       setUser(res);
     });
-    api.getProjects().then(res => {
-      setProjects(res.projects || []);
+    api.getProjects().then(async res => {
+      const projs: Project[] = res.projects || [];
+      setProjects(projs);
       setLoading(false);
+      // Инициализируем baseline счётчиков сразу при загрузке
+      for (const proj of projs) {
+        if (lastMsgCountRef.current[proj.id] === undefined) {
+          const r = await api.getMessages(proj.id);
+          const msgs: Message[] = r.messages || [];
+          lastMsgCountRef.current[proj.id] = msgs.filter(m => m.is_admin).length;
+        }
+      }
     });
 
     if (Notification.permission === 'default') {
