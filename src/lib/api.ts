@@ -68,6 +68,18 @@ export const api = {
   uploadFile: (project_id: number, file_name: string, file_data: string) =>
     fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'upload_file', project_id, file_name, file_data }) }).then(r => r.json()),
 
+  sendTyping: (project_id: number) =>
+    fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'typing', project_id }) }).then(r => r.json()),
+
+  getTyping: (project_id: number) =>
+    fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'get_typing', project_id }) }).then(r => r.json()),
+
+  adminSendTyping: (project_id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'typing', project_id }) }).then(r => r.json()),
+
+  adminGetTyping: (project_id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'get_typing', project_id }) }).then(r => r.json()),
+
   adminDeleteUser: (user_id: number) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_user', user_id }) }).then(r => r.json()),
 

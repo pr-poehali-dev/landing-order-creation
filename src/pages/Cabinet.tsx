@@ -101,8 +101,14 @@ export default function Cabinet() {
           }
         } else if (activeRef.current?.id === proj.id) {
           setMessages(msgs);
+          // убираем лишний else
         }
         lastMsgCountRef.current[proj.id] = adminMsgs.length;
+      }
+      // Проверяем typing для открытого проекта
+      if (activeRef.current) {
+        const t = await api.getTyping(activeRef.current.id);
+        setPeerTyping(t.is_typing || false);
       }
     }, 5000);
 
@@ -143,6 +149,8 @@ export default function Cabinet() {
 
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [peerTyping, setPeerTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -308,6 +316,16 @@ export default function Cabinet() {
                         </div>
                       ))}
                     </div>
+                    {peerTyping && (
+                      <div className="flex items-center gap-2 mb-2 text-white/40 text-xs">
+                        <span className="flex gap-0.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </span>
+                        Команда печатает...
+                      </div>
+                    )}
                     <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
                     <div className="flex gap-2">
                       <button onClick={() => fileInputRef.current?.click()} disabled={uploadingFile}
@@ -315,7 +333,13 @@ export default function Cabinet() {
                         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={16} className="text-white/50" />
                       </button>
-                      <input value={msgText} onChange={e => setMsgText(e.target.value)}
+                      <input value={msgText} onChange={e => {
+                          setMsgText(e.target.value);
+                          if (active) {
+                            api.sendTyping(active.id);
+                            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                          }
+                        }}
                         onKeyDown={e => e.key === 'Enter' && sendMessage()}
                         placeholder="Написать сообщение..."
                         className="flex-1 px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm"

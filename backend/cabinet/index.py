@@ -104,6 +104,32 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': row[0], 'created_at': json_serial(row[1]), 'author': user_name, 'is_admin': is_admin, 'text': text})}
 
+        if act == 'typing':
+            pid = body.get('project_id')
+            if pid:
+                cur.execute("""
+                    INSERT INTO typing_indicators (project_id, user_id, is_admin, updated_at)
+                    VALUES (%s, %s, FALSE, NOW())
+                    ON CONFLICT (project_id, user_id) DO UPDATE SET updated_at = NOW()
+                """, (pid, user_id))
+                conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        if act == 'get_typing':
+            pid = body.get('project_id')
+            if not pid:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id обязателен'})}
+            cur.execute("""
+                SELECT is_admin FROM typing_indicators
+                WHERE project_id = %s AND user_id != %s AND updated_at > NOW() - INTERVAL '4 seconds'
+            """, (pid, user_id))
+            rows = cur.fetchall()
+            conn.close()
+            is_typing = any(r[0] for r in rows)
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'is_typing': is_typing})}
+
         if act == 'upload_file':
             pid = body.get('project_id')
             file_name = body.get('file_name', 'file')

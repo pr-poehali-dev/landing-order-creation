@@ -56,6 +56,8 @@ export default function Admin() {
   const [unread, setUnread] = useState<Record<number, number>>({});
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
+  const [peerTyping, setPeerTyping] = useState(false);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const selectedProjectRef = useRef<Project | null>(null);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
@@ -110,6 +112,11 @@ export default function Admin() {
           }
         }
         lastMsgCountRef.current[proj.id] = clientMsgs.length;
+      }
+      // Проверяем typing для открытого проекта
+      if (selectedProjectRef.current && subTabRef.current === 'messages') {
+        const t = await api.adminGetTyping(selectedProjectRef.current.id);
+        setPeerTyping(t.is_typing || false);
       }
     }, 5000);
 
@@ -485,6 +492,16 @@ export default function Admin() {
                             </div>
                           ))}
                         </div>
+                        {peerTyping && (
+                          <div className="flex items-center gap-2 mb-2 text-white/40 text-xs">
+                            <span className="flex gap-0.5">
+                              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+                              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+                              <span className="w-1.5 h-1.5 rounded-full bg-purple-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                            </span>
+                            Клиент печатает...
+                          </div>
+                        )}
                         <input ref={fileInputAdminRef} type="file" className="hidden" onChange={handleAdminFileUpload} />
                         <div className="flex gap-2">
                           <button onClick={() => fileInputAdminRef.current?.click()} disabled={uploadingFile}
@@ -492,7 +509,13 @@ export default function Admin() {
                             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                             <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={16} className="text-white/50" />
                           </button>
-                          <input value={msgText} onChange={e => setMsgText(e.target.value)}
+                          <input value={msgText} onChange={e => {
+                              setMsgText(e.target.value);
+                              if (selectedProject) {
+                                api.adminSendTyping(selectedProject.id);
+                                if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+                              }
+                            }}
                             onKeyDown={e => e.key === 'Enter' && sendMessage()}
                             placeholder="Ответить клиенту..."
                             className="flex-1 px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm"

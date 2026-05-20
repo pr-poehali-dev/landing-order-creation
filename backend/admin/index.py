@@ -191,6 +191,36 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
+        # typing — индикатор набора
+        if act == 'typing':
+            admin_id = admin[0]
+            project_id = body.get('project_id')
+            if project_id:
+                cur.execute("""
+                    INSERT INTO typing_indicators (project_id, user_id, is_admin, updated_at)
+                    VALUES (%s, %s, TRUE, NOW())
+                    ON CONFLICT (project_id, user_id) DO UPDATE SET updated_at = NOW()
+                """, (project_id, admin_id))
+                conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # get_typing
+        if act == 'get_typing':
+            admin_id = admin[0]
+            project_id = body.get('project_id')
+            if not project_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id обязателен'})}
+            cur.execute("""
+                SELECT is_admin FROM typing_indicators
+                WHERE project_id = %s AND user_id != %s AND updated_at > NOW() - INTERVAL '4 seconds'
+            """, (project_id, admin_id))
+            rows = cur.fetchall()
+            conn.close()
+            is_typing = any(not r[0] for r in rows)
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'is_typing': is_typing})}
+
         # upload_file — загрузка файла в S3, сохранение в project_files
         if act == 'upload_file':
             project_id = body.get('project_id')
