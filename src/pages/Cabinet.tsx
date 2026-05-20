@@ -99,6 +99,8 @@ export default function Cabinet() {
           } else {
             setUnread(prev => ({ ...prev, [proj.id]: (prev[proj.id] || 0) + (adminMsgs.length - (lastMsgCountRef.current[proj.id] ?? adminMsgs.length)) }));
           }
+        } else if (activeRef.current?.id === proj.id) {
+          setMessages(msgs);
         }
         lastMsgCountRef.current[proj.id] = adminMsgs.length;
       }
@@ -284,7 +286,7 @@ export default function Cabinet() {
               <div className="p-5 sm:p-6">
                 {tab === 'messages' && (
                   <div>
-                    <div className="space-y-3 mb-4 max-h-96 overflow-y-auto">
+                    <div className="space-y-3 mb-4 max-h-96 overflow-y-auto" ref={el => { if (el) el.scrollTop = el.scrollHeight; }}>
                       {messages.length === 0 && <p className="text-white/30 text-sm text-center py-6">Сообщений пока нет</p>}
                       {messages.map(m => (
                         <div key={m.id} className={`flex ${m.is_admin ? 'justify-start' : 'justify-end'}`}>

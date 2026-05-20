@@ -60,8 +60,10 @@ export default function Admin() {
   const selectedProjectRef = useRef<Project | null>(null);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
   const openProjectRef = useRef<((p: Project, msgs?: {id:number;text:string;author:string;is_admin:boolean}[]) => void) | null>(null);
+  const subTabRef = useRef<string>('messages');
 
   useEffect(() => { selectedProjectRef.current = selectedProject; }, [selectedProject]);
+  useEffect(() => { subTabRef.current = subTab; }, [subTab]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   useEffect(() => {
@@ -101,7 +103,7 @@ export default function Admin() {
               openProjectRef.current?.(proj, r.messages || []);
             };
           }
-          if (selectedProjectRef.current?.id === proj.id) {
+          if (selectedProjectRef.current?.id === proj.id && subTabRef.current === 'messages') {
             setMessages(r.messages || []);
           } else {
             setUnread(prev => ({ ...prev, [proj.id]: (prev[proj.id] || 0) + (clientMsgs.length - (lastMsgCountRef.current[proj.id] ?? clientMsgs.length)) }));
@@ -459,7 +461,7 @@ export default function Admin() {
                   <div className="p-5 sm:p-6">
                     {subTab === 'messages' && (
                       <div>
-                        <div className="space-y-3 mb-4 max-h-80 overflow-y-auto">
+                        <div className="space-y-3 mb-4 max-h-80 overflow-y-auto" ref={el => { if (el) el.scrollTop = el.scrollHeight; }}>
                           {messages.length === 0 && <p className="text-white/30 text-sm text-center py-4">Сообщений нет</p>}
                           {messages.map((m, i) => (
                             <div key={m.id || i} className={`flex ${m.is_admin ? 'justify-start' : 'justify-end'}`}>
