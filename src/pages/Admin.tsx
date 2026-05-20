@@ -64,16 +64,27 @@ export default function Admin() {
     });
     loadData();
 
+    if (Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     const interval = setInterval(async () => {
       const p = await api.adminGetProjects();
       const allProjects: Project[] = p.projects || [];
       for (const proj of allProjects) {
         const r = await api.getMessages(proj.id);
-        const msgs: {id:number;is_admin:boolean}[] = r.messages || [];
+        const msgs: {id:number;is_admin:boolean;text:string;author:string}[] = r.messages || [];
         const clientMsgs = msgs.filter(m => !m.is_admin);
         const prev = lastMsgCountRef.current[proj.id] ?? clientMsgs.length;
         if (clientMsgs.length > prev) {
           playNotification();
+          const lastMsg = clientMsgs[clientMsgs.length - 1];
+          if (Notification.permission === 'granted') {
+            new Notification(`💬 ${proj.client_name} — ${proj.title}`, {
+              body: lastMsg?.text || 'Новое сообщение',
+              icon: '/favicon.ico',
+            });
+          }
           if (selectedProjectRef.current?.id === proj.id) {
             setMessages(r.messages || []);
           }
