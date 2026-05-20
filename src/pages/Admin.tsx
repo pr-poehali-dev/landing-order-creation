@@ -228,6 +228,11 @@ export default function Admin() {
     const r = await api.getFiles(selectedProject.id); setFiles(r.files || []);
   };
 
+  const deleteFile = async (fileId: number) => {
+    await api.adminDeleteFile(fileId);
+    setFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
   const addInvoice = async () => {
     if (!selectedProject) return;
     const amount = parseFloat(newInvoice.amount);
@@ -512,12 +517,16 @@ export default function Admin() {
                         <div className="space-y-2">
                           {files.length === 0 && <p className="text-white/30 text-sm text-center py-4">Файлов нет</p>}
                           {files.map(f => (
-                            <a key={f.id} href={f.url} target="_blank" rel="noreferrer"
-                              className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
+                            <div key={f.id} className="flex items-center gap-2 p-3 rounded-xl hover:bg-white/5 transition-colors group">
                               <Icon name="FileText" size={16} className="text-purple-400 shrink-0" />
-                              <span className="text-sm text-white/70 flex-1">{f.name}</span>
-                              <Icon name="ExternalLink" size={13} className="text-white/30" />
-                            </a>
+                              <a href={f.url} target="_blank" rel="noreferrer" className="text-sm text-white/70 hover:text-white flex-1 truncate">{f.name}</a>
+                              <a href={f.url} target="_blank" rel="noreferrer">
+                                <Icon name="ExternalLink" size={13} className="text-white/30 hover:text-white/60" />
+                              </a>
+                              <button onClick={() => deleteFile(f.id)} className="p-1 rounded hover:bg-red-500/10 text-white/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                                <Icon name="Trash2" size={14} />
+                              </button>
+                            </div>
                           ))}
                         </div>
                       </div>

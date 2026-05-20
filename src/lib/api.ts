@@ -56,6 +56,9 @@ export const api = {
   adminAddFile: (project_id: number, name: string, url: string, file_type: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'add_file', project_id, name, url, file_type }) }).then(r => r.json()),
 
+  adminDeleteFile: (file_id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_file', file_id }) }).then(r => r.json()),
+
   adminAddInvoice: (project_id: number, title: string, amount: number, file_url: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'add_invoice', project_id, title, amount, file_url }) }).then(r => r.json()),
 

@@ -132,6 +132,17 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': file_id})}
 
+        # delete_file
+        if act == 'delete_file':
+            file_id = body.get('file_id')
+            if not file_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'file_id обязателен'})}
+            cur.execute("DELETE FROM project_files WHERE id = %s", (file_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
         # add_invoice
         if act == 'add_invoice':
             project_id = body.get('project_id')
