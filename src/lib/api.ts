@@ -2,6 +2,7 @@ const URLS = {
   auth: 'https://functions.poehali.dev/96d4281f-b94f-4d46-a052-c9ab32b88f91',
   cabinet: 'https://functions.poehali.dev/bd83f061-f6b3-4b49-b12f-1a0007e354b9',
   admin: 'https://functions.poehali.dev/3ce65aba-6279-4e65-a710-af47b06c9b6c',
+  notify: 'https://functions.poehali.dev/89c6678a-fbae-40be-b731-50a61627c3ff',
 };
 
 function getSession() {
@@ -60,4 +61,7 @@ export const api = {
 
   adminSendMessage: (project_id: number, text: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'send_message', project_id, text }) }).then(r => r.json()),
+
+  notifyIfOffline: (project_id: number, message_text: string) =>
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ project_id, message_text }) }).then(r => r.json()),
 };

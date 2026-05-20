@@ -1,0 +1,17 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "No auth",
+      "method": "POST",
+      "path": "/",
+      "body": {"project_id": 1, "message_text": "test"},
+      "expectedStatus": 403
+    }
+  ]
+}

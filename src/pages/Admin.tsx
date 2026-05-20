@@ -133,9 +133,11 @@ export default function Admin() {
 
   const sendMessage = async () => {
     if (!msgText.trim() || !selectedProject) return;
-    const res = await api.adminSendMessage(selectedProject.id, msgText);
-    setMessages(prev => [...prev, { ...res, is_admin: true, author: 'Команда', text: msgText }]);
+    const text = msgText;
+    const res = await api.adminSendMessage(selectedProject.id, text);
+    setMessages(prev => [...prev, { ...res, is_admin: true, author: 'Команда', text }]);
     setMsgText('');
+    api.notifyIfOffline(selectedProject.id, text);
   };
 
   const updateStatus = async (status: string) => {

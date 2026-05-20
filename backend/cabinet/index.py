@@ -48,6 +48,9 @@ def handler(event: dict, context) -> dict:
         conn.close()
         return {'statusCode': 401, 'headers': cors, 'body': json.dumps({'error': 'Не авторизован'})}
 
+    cur.execute("UPDATE users SET last_seen = NOW() WHERE id = %s", (user[0],))
+    conn.commit()
+
     user_id, user_name, user_email, is_admin = user
 
     # GET ?action=projects — список проектов
