@@ -145,6 +145,7 @@ export default function Admin() {
     await api.adminUpdateStatus(selectedProject.id, status);
     setSelectedProject({ ...selectedProject, status });
     setProjects(projects.map(p => p.id === selectedProject.id ? { ...p, status } : p));
+    api.notifyStatusChanged(selectedProject.id, status);
   };
 
   const createUser = async () => {
@@ -168,9 +169,12 @@ export default function Admin() {
 
   const addInvoice = async () => {
     if (!selectedProject) return;
-    await api.adminAddInvoice(selectedProject.id, newInvoice.title, parseFloat(newInvoice.amount), newInvoice.file_url);
+    const amount = parseFloat(newInvoice.amount);
+    const title = newInvoice.title;
+    await api.adminAddInvoice(selectedProject.id, title, amount, newInvoice.file_url);
     setShowInvoiceForm(false); setNewInvoice({ title: '', amount: '', file_url: '' });
     const r = await api.getInvoices(selectedProject.id); setInvoices(r.invoices || []);
+    api.notifyInvoice(selectedProject.id, title, amount);
   };
 
   const logout = async () => {

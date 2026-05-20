@@ -11,42 +11,97 @@ def get_conn():
     return psycopg2.connect(os.environ['DATABASE_URL'])
 
 
-def send_email(to_email: str, client_name: str, project_title: str, message_text: str):
+CABINET_URL = 'https://landingguru.ru/cabinet'
+
+STATUS_LABELS = {
+    'new': 'Новый',
+    'in_progress': 'В работе',
+    'review': 'На согласовании',
+    'done': 'Готово',
+}
+
+
+def base_email(to_email: str, subject: str, html_body: str):
     smtp_host = os.environ['SMTP_HOST']
     smtp_port = int(os.environ['SMTP_PORT'])
     smtp_user = os.environ['SMTP_USER']
     smtp_password = os.environ['SMTP_PASSWORD']
 
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = f'Новое сообщение по проекту «{project_title}»'
+    msg['Subject'] = subject
     msg['From'] = smtp_user
     msg['To'] = to_email
 
     html = f"""
     <div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; background: #0f0f1a; border-radius: 16px; overflow: hidden;">
-      <div style="background: linear-gradient(135deg, #a855f7, #7c3aed); padding: 28px 32px;">
-        <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">Новое сообщение от команды</h1>
-      </div>
-      <div style="padding: 28px 32px; color: #e0e0e0;">
-        <p style="margin: 0 0 8px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
-        <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
-        <div style="background: rgba(168,85,247,0.1); border-left: 3px solid #a855f7; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;">
-          <p style="margin: 0; font-size: 15px; color: #e0e0e0; line-height: 1.5;">{message_text}</p>
-        </div>
-        <a href="https://landingguru.ru/cabinet" 
+      {html_body}
+      <div style="padding: 0 32px 24px 32px;">
+        <a href="{CABINET_URL}"
            style="display: inline-block; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 15px;">
           Открыть кабинет →
         </a>
-        <p style="margin: 20px 0 0 0; font-size: 12px; color: #555;">Вы получили это письмо, так как вам отправили сообщение в личном кабинете.</p>
+        <p style="margin: 16px 0 0 0; font-size: 12px; color: #555;">LandingGuru.ru — личный кабинет клиента</p>
       </div>
     </div>
     """
-
     msg.attach(MIMEText(html, 'html'))
 
     with smtplib.SMTP_SSL(smtp_host, smtp_port) as server:
         server.login(smtp_user, smtp_password)
         server.sendmail(smtp_user, to_email, msg.as_string())
+
+
+def send_message_email(to_email: str, project_title: str, message_text: str):
+    body = f"""
+    <div style="background: linear-gradient(135deg, #a855f7, #7c3aed); padding: 28px 32px;">
+      <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">💬 Новое сообщение от команды</h1>
+    </div>
+    <div style="padding: 28px 32px 16px; color: #e0e0e0;">
+      <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
+      <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
+      <div style="background: rgba(168,85,247,0.1); border-left: 3px solid #a855f7; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px;">
+        <p style="margin: 0; font-size: 15px; color: #e0e0e0; line-height: 1.5;">{message_text}</p>
+      </div>
+    </div>
+    """
+    base_email(to_email, f'Новое сообщение по проекту «{project_title}»', body)
+
+
+def send_status_email(to_email: str, project_title: str, status: str):
+    label = STATUS_LABELS.get(status, status)
+    color = {'new': '#a855f7', 'in_progress': '#00f5ff', 'review': '#facc15', 'done': '#4ade80'}.get(status, '#a855f7')
+    body = f"""
+    <div style="background: linear-gradient(135deg, #a855f7, #7c3aed); padding: 28px 32px;">
+      <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">🔄 Статус проекта обновлён</h1>
+    </div>
+    <div style="padding: 28px 32px 16px; color: #e0e0e0;">
+      <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
+      <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
+      <p style="margin: 0 0 8px 0; color: #a0a0b0; font-size: 14px;">Новый статус</p>
+      <span style="display: inline-block; background: {color}22; color: {color}; border: 1px solid {color}55; padding: 8px 20px; border-radius: 20px; font-weight: 700; font-size: 15px; margin-bottom: 24px;">
+        {label}
+      </span>
+    </div>
+    """
+    base_email(to_email, f'Статус проекта «{project_title}» изменён', body)
+
+
+def send_invoice_email(to_email: str, project_title: str, invoice_title: str, amount: float):
+    body = f"""
+    <div style="background: linear-gradient(135deg, #a855f7, #7c3aed); padding: 28px 32px;">
+      <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">🧾 Выставлен счёт на оплату</h1>
+    </div>
+    <div style="padding: 28px 32px 16px; color: #e0e0e0;">
+      <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
+      <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
+      <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); border-radius: 12px; padding: 20px 24px; margin-bottom: 24px;">
+        <p style="margin: 0 0 6px 0; color: #a0a0b0; font-size: 13px;">Счёт</p>
+        <p style="margin: 0 0 12px 0; font-size: 15px; color: #fff;">{invoice_title}</p>
+        <p style="margin: 0; font-size: 26px; font-weight: 700; color: #a855f7;">{amount:,.0f} ₽</p>
+      </div>
+    </div>
+    """
+    base_email(to_email, f'Счёт на оплату по проекту «{project_title}»', body)
 
 
 def handler(event: dict, context) -> dict:
@@ -76,8 +131,8 @@ def handler(event: dict, context) -> dict:
         return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
 
     body = json.loads(event.get('body') or '{}')
+    notify_type = body.get('type', 'message')
     project_id = body.get('project_id')
-    message_text = body.get('message_text', '')
 
     cur.execute("""
         SELECT u.email, u.name, u.last_seen, p.title
@@ -93,14 +148,22 @@ def handler(event: dict, context) -> dict:
 
     email, name, last_seen, project_title = row
 
-    if last_seen is None:
-        offline = True
+    # Для сообщений — только если оффлайн
+    if notify_type == 'message':
+        offline = last_seen is None or (datetime.now() - last_seen).total_seconds() > 300
+        if not offline:
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': False, 'reason': 'online'})}
+        send_message_email(email, project_title, body.get('message_text', ''))
+
+    # Для статуса — всегда
+    elif notify_type == 'status':
+        send_status_email(email, project_title, body.get('status', ''))
+
+    # Для счёта — всегда
+    elif notify_type == 'invoice':
+        send_invoice_email(email, project_title, body.get('invoice_title', ''), float(body.get('amount', 0)))
+
     else:
-        diff = (datetime.now() - last_seen).total_seconds()
-        offline = diff > 300
+        return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неизвестный тип уведомления'})}
 
-    if offline:
-        send_email(email, name, project_title, message_text)
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': True})}
-
-    return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': False, 'reason': 'online'})}
+    return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': True})}

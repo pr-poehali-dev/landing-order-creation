@@ -63,5 +63,11 @@ export const api = {
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'send_message', project_id, text }) }).then(r => r.json()),
 
   notifyIfOffline: (project_id: number, message_text: string) =>
-    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ project_id, message_text }) }).then(r => r.json()),
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'message', project_id, message_text }) }).then(r => r.json()),
+
+  notifyStatusChanged: (project_id: number, status: string) =>
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'status', project_id, status }) }).then(r => r.json()),
+
+  notifyInvoice: (project_id: number, invoice_title: string, amount: number) =>
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'invoice', project_id, invoice_title, amount }) }).then(r => r.json()),
 };
