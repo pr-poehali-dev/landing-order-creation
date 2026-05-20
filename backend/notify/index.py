@@ -40,7 +40,10 @@ def base_email(to_email: str, subject: str, html_body: str):
            style="display: inline-block; background: linear-gradient(135deg, #a855f7, #7c3aed); color: white; text-decoration: none; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 15px;">
           Открыть кабинет →
         </a>
-        <p style="margin: 16px 0 0 0; font-size: 12px; color: #555;">LandingGuru.ru — личный кабинет клиента</p>
+        <div style="margin: 20px 0 0 0; padding: 12px 16px; background: rgba(255,255,255,0.04); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+          <p style="margin: 0; font-size: 12px; color: #888;">⚠️ Это письмо отправлено автоматически. Чтобы ответить — войдите в личный кабинет по кнопке выше. Ответ на это письмо не доставляется команде.</p>
+        </div>
+        <p style="margin: 12px 0 0 0; font-size: 11px; color: #444;">LandingGuru.ru — личный кабинет клиента</p>
       </div>
     </div>
     """
