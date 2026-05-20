@@ -54,6 +54,7 @@ export default function Admin() {
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const selectedProjectRef = useRef<Project | null>(null);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
+  const openProjectRef = useRef<((p: Project, msgs?: {id:number;text:string;author:string;is_admin:boolean}[]) => void) | null>(null);
 
   useEffect(() => { selectedProjectRef.current = selectedProject; }, [selectedProject]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
@@ -80,10 +81,14 @@ export default function Admin() {
           playNotification();
           const lastMsg = clientMsgs[clientMsgs.length - 1];
           if (Notification.permission === 'granted') {
-            new Notification(`💬 ${proj.client_name} — ${proj.title}`, {
+            const notif = new Notification(`💬 ${proj.client_name} — ${proj.title}`, {
               body: lastMsg?.text || 'Новое сообщение',
               icon: '/favicon.ico',
             });
+            notif.onclick = () => {
+              window.focus();
+              openProjectRef.current?.(proj, r.messages || []);
+            };
           }
           if (selectedProjectRef.current?.id === proj.id) {
             setMessages(r.messages || []);
@@ -102,12 +107,21 @@ export default function Admin() {
     setProjects(p.projects || []);
   };
 
-  const openProject = async (p: Project) => {
+  const openProject = async (p: Project, preloadedMsgs?: {id:number;text:string;author:string;is_admin:boolean}[]) => {
     setSelectedProject(p);
+    setTab('projects');
     setSubTab('messages');
-    const r = await api.getMessages(p.id);
-    setMessages(r.messages || []);
+    if (preloadedMsgs) {
+      setMessages(preloadedMsgs);
+    } else {
+      const r = await api.getMessages(p.id);
+      setMessages(r.messages || []);
+    }
   };
+
+  useEffect(() => {
+    openProjectRef.current = openProject;
+  });
 
   const loadSubTab = async (t: 'messages' | 'files' | 'invoices') => {
     if (!selectedProject) return;
