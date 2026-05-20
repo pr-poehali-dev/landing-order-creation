@@ -132,7 +132,10 @@ export default function Admin() {
   const loadSubTab = async (t: 'messages' | 'files' | 'invoices') => {
     if (!selectedProject) return;
     setSubTab(t);
-    if (t === 'messages') { const r = await api.getMessages(selectedProject.id); setMessages(r.messages || []); }
+    if (t === 'messages') {
+      setUnread(prev => ({ ...prev, [selectedProject.id]: 0 }));
+      const r = await api.getMessages(selectedProject.id); setMessages(r.messages || []);
+    }
     else if (t === 'files') { const r = await api.getFiles(selectedProject.id); setFiles(r.files || []); }
     else if (t === 'invoices') { const r = await api.getInvoices(selectedProject.id); setInvoices(r.invoices || []); }
   };
@@ -393,13 +396,22 @@ export default function Admin() {
 
                   {/* Sub-tabs */}
                   <div className="flex" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {(['messages', 'files', 'invoices'] as const).map(t => (
-                      <button key={t} onClick={() => loadSubTab(t)}
-                        className="flex-1 py-3 text-sm font-medium transition-colors"
-                        style={{ color: subTab === t ? '#a855f7' : 'rgba(255,255,255,0.4)', borderBottom: subTab === t ? '2px solid #a855f7' : '2px solid transparent' }}>
-                        {t === 'messages' ? 'Переписка' : t === 'files' ? 'Файлы' : 'Счета'}
-                      </button>
-                    ))}
+                    {(['messages', 'files', 'invoices'] as const).map(t => {
+                      const tabUnread = t === 'messages' && subTab !== 'messages' && (unread[selectedProject.id] || 0) > 0;
+                      return (
+                        <button key={t} onClick={() => loadSubTab(t)}
+                          className="flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+                          style={{ color: subTab === t ? '#a855f7' : 'rgba(255,255,255,0.4)', borderBottom: subTab === t ? '2px solid #a855f7' : '2px solid transparent' }}>
+                          {t === 'messages' ? 'Переписка' : t === 'files' ? 'Файлы' : 'Счета'}
+                          {tabUnread && (
+                            <span className="text-xs font-bold px-1.5 py-0.5 rounded-full leading-none"
+                              style={{ background: '#a855f7', color: 'white' }}>
+                              {unread[selectedProject.id]}
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   <div className="p-5 sm:p-6">
