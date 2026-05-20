@@ -48,6 +48,12 @@ export default function Cabinet() {
   useEffect(() => { activeRef.current = active; }, [active]);
 
   useEffect(() => {
+    const total = Object.values(unread).reduce((s, n) => s + n, 0);
+    document.title = total > 0 ? `(${total}) Кабинет — LandingGuru` : 'Кабинет — LandingGuru';
+    return () => { document.title = 'LandingGuru'; };
+  }, [unread]);
+
+  useEffect(() => {
     api.me().then(res => {
       if (res.error) { navigate('/login'); return; }
       if (res.is_admin) { navigate('/admin'); return; }

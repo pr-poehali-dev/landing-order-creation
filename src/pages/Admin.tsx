@@ -63,6 +63,12 @@ export default function Admin() {
   useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   useEffect(() => {
+    const total = Object.values(unread).reduce((s, n) => s + n, 0);
+    document.title = total > 0 ? `(${total}) Админ — LandingGuru` : 'Админ — LandingGuru';
+    return () => { document.title = 'LandingGuru'; };
+  }, [unread]);
+
+  useEffect(() => {
     api.me().then(res => {
       if (res.error || !res.is_admin) { navigate('/login'); return; }
     });
