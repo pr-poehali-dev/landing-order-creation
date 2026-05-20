@@ -149,9 +149,15 @@ export default function Admin() {
   };
 
   const createUser = async () => {
-    await api.adminCreateUser(newUser.name, newUser.email, newUser.password);
-    setShowNewUser(false); setNewUser({ name: '', email: '', password: '' });
-    loadData();
+    const res = await api.adminCreateUser(newUser.name, newUser.email, newUser.password);
+    setShowNewUser(false);
+    setNewUser({ name: '', email: '', password: '' });
+    await loadData();
+    if (res.id) {
+      setTab('projects');
+      setShowNewProject(true);
+      setNewProject({ user_id: res.id, title: '', status: 'new', description: '' });
+    }
   };
 
   const createProject = async () => {
