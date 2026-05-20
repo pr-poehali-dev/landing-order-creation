@@ -102,7 +102,7 @@ export default function Cabinet() {
         }
         lastMsgCountRef.current[proj.id] = adminMsgs.length;
       }
-    }, 10000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [navigate]);

@@ -109,7 +109,7 @@ export default function Admin() {
         }
         lastMsgCountRef.current[proj.id] = clientMsgs.length;
       }
-    }, 15000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, [navigate]);
