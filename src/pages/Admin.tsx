@@ -53,6 +53,7 @@ export default function Admin() {
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editUser, setEditUser] = useState({ name: '', email: '', password: '' });
+  const [unread, setUnread] = useState<Record<number, number>>({});
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const selectedProjectRef = useRef<Project | null>(null);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
@@ -94,6 +95,8 @@ export default function Admin() {
           }
           if (selectedProjectRef.current?.id === proj.id) {
             setMessages(r.messages || []);
+          } else {
+            setUnread(prev => ({ ...prev, [proj.id]: (prev[proj.id] || 0) + (clientMsgs.length - (lastMsgCountRef.current[proj.id] ?? clientMsgs.length)) }));
           }
         }
         lastMsgCountRef.current[proj.id] = clientMsgs.length;
@@ -113,6 +116,7 @@ export default function Admin() {
     setSelectedProject(p);
     setTab('projects');
     setSubTab('messages');
+    setUnread(prev => ({ ...prev, [p.id]: 0 }));
     if (preloadedMsgs) {
       setMessages(preloadedMsgs);
     } else {
@@ -334,18 +338,33 @@ export default function Admin() {
               )}
 
               <div className="space-y-2">
-                {projects.map(p => (
-                  <button key={p.id} onClick={() => openProject(p)}
-                    className="w-full text-left rounded-xl p-3 transition-all"
-                    style={{ ...cardStyle, borderColor: selectedProject?.id === p.id ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.08)' }}>
-                    <div className="font-semibold text-sm mb-1">{p.title}</div>
-                    <div className="text-white/40 text-xs mb-2">{p.client_name}</div>
-                    <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-                      style={{ background: `${STATUS_COLORS[p.status] || '#a855f7'}20`, color: STATUS_COLORS[p.status] || '#a855f7' }}>
-                      {STATUS_OPTIONS.find(s => s.value === p.status)?.label || p.status}
-                    </span>
-                  </button>
-                ))}
+                {projects.map(p => {
+                  const hasUnread = (unread[p.id] || 0) > 0;
+                  return (
+                    <button key={p.id} onClick={() => openProject(p)}
+                      className="w-full text-left rounded-xl p-3 transition-all"
+                      style={{
+                        ...cardStyle,
+                        borderColor: selectedProject?.id === p.id ? 'rgba(168,85,247,0.5)' : hasUnread ? 'rgba(168,85,247,0.35)' : 'rgba(255,255,255,0.08)',
+                        background: hasUnread ? 'rgba(168,85,247,0.07)' : cardStyle.background,
+                      }}>
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="font-semibold text-sm">{p.title}</div>
+                        {hasUnread && (
+                          <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                            style={{ background: '#a855f7', color: 'white', minWidth: 20, textAlign: 'center' }}>
+                            {unread[p.id]}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-white/40 text-xs mb-2">{p.client_name}</div>
+                      <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+                        style={{ background: `${STATUS_COLORS[p.status] || '#a855f7'}20`, color: STATUS_COLORS[p.status] || '#a855f7' }}>
+                        {STATUS_OPTIONS.find(s => s.value === p.status)?.label || p.status}
+                      </span>
+                    </button>
+                  );
+                })}
                 {projects.length === 0 && <p className="text-white/30 text-sm text-center py-6">Проектов пока нет</p>}
               </div>
             </div>
