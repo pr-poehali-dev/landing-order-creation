@@ -149,6 +149,22 @@ export default function Cabinet() {
 
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileInputTabRef = useRef<HTMLInputElement>(null);
+
+  const handleTabFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !active) return;
+    setUploadingFile(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      const res = await api.uploadFile(active.id, file.name, base64);
+      if (res.url) setFiles(prev => [...prev, { id: res.id, name: res.name, url: res.url, file_type: res.file_type }]);
+      setUploadingFile(false);
+      if (fileInputTabRef.current) fileInputTabRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
   const [peerTyping, setPeerTyping] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -354,7 +370,15 @@ export default function Cabinet() {
                 )}
 
                 {tab === 'files' && (
-                  <div className="space-y-2">
+                  <div>
+                    <input ref={fileInputTabRef} type="file" className="hidden" onChange={handleTabFileUpload} />
+                    <button onClick={() => fileInputTabRef.current?.click()} disabled={uploadingFile}
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold mb-4"
+                      style={{ background: 'rgba(168,85,247,0.12)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)' }}>
+                      <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={14} />
+                      {uploadingFile ? 'Загрузка...' : 'Загрузить файл'}
+                    </button>
+                    <div className="space-y-2">
                     {files.length === 0 && <p className="text-white/30 text-sm text-center py-6">Файлов пока нет</p>}
                     {files.map(f => (
                       <a key={f.id} href={f.url} target="_blank" rel="noreferrer"
@@ -367,6 +391,7 @@ export default function Cabinet() {
                         <Icon name="ExternalLink" size={14} className="text-white/30 group-hover:text-white/60" />
                       </a>
                     ))}
+                    </div>
                   </div>
                 )}
 
