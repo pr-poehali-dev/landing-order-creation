@@ -43,6 +43,7 @@ export default function Cabinet() {
   const [loading, setLoading] = useState(true);
   const activeRef = useRef<Project | null>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
+  const [unread, setUnread] = useState<Record<number, number>>({});
 
   useEffect(() => { activeRef.current = active; }, [active]);
 
@@ -80,6 +81,8 @@ export default function Cabinet() {
           }
           if (activeRef.current?.id === proj.id) {
             setMessages(msgs);
+          } else {
+            setUnread(prev => ({ ...prev, [proj.id]: (prev[proj.id] || 0) + (adminMsgs.length - (lastMsgCountRef.current[proj.id] ?? adminMsgs.length)) }));
           }
         }
         lastMsgCountRef.current[proj.id] = adminMsgs.length;
@@ -92,6 +95,7 @@ export default function Cabinet() {
   const openProject = async (p: Project) => {
     setActive(p);
     setTab('messages');
+    setUnread(prev => ({ ...prev, [p.id]: 0 }));
     loadTab('messages', p.id);
   };
 
@@ -170,11 +174,24 @@ export default function Cabinet() {
             <div className="space-y-3">
               {projects.map(p => {
                 const s = STATUS_LABELS[p.status] || { label: p.status, color: '#a855f7' };
+                const hasUnread = (unread[p.id] || 0) > 0;
                 return (
                   <button key={p.id} onClick={() => openProject(p)}
                     className="w-full text-left rounded-2xl p-4 transition-all"
-                    style={{ ...cardStyle, borderColor: active?.id === p.id ? 'rgba(168,85,247,0.5)' : 'rgba(255,255,255,0.08)' }}>
-                    <div className="font-semibold text-sm mb-2">{p.title}</div>
+                    style={{
+                      ...cardStyle,
+                      borderColor: active?.id === p.id ? 'rgba(168,85,247,0.5)' : hasUnread ? 'rgba(168,85,247,0.35)' : 'rgba(255,255,255,0.08)',
+                      background: hasUnread ? 'rgba(168,85,247,0.07)' : cardStyle.background,
+                    }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-semibold text-sm">{p.title}</div>
+                      {hasUnread && (
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full"
+                          style={{ background: '#a855f7', color: 'white', minWidth: 20, textAlign: 'center' }}>
+                          {unread[p.id]}
+                        </span>
+                      )}
+                    </div>
                     <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
                       style={{ background: `${s.color}20`, color: s.color }}>
                       {s.label}
