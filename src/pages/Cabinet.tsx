@@ -159,7 +159,10 @@ export default function Cabinet() {
     reader.onload = async () => {
       const base64 = (reader.result as string).split(',')[1];
       const res = await api.uploadFile(active.id, file.name, base64);
-      if (res.url) setFiles(prev => [...prev, { id: res.id, name: res.name, url: res.url, file_type: res.file_type }]);
+      if (res.url) {
+        setFiles(prev => [...prev, { id: res.id, name: res.name, url: res.url, file_type: res.file_type }]);
+        api.notifyFileUploaded(active.id, res.name, res.url);
+      }
       setUploadingFile(false);
       if (fileInputTabRef.current) fileInputTabRef.current.value = '';
     };

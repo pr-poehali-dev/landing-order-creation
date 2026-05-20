@@ -122,18 +122,30 @@ def handler(event: dict, context) -> dict:
     conn = get_conn()
     cur = conn.cursor()
 
-    cur.execute("""
-        SELECT u.id, u.is_admin
-        FROM sessions s JOIN users u ON s.user_id = u.id
-        WHERE s.id = %s AND s.expires_at > NOW() AND u.is_admin = TRUE
-    """, (session_id,))
-    admin = cur.fetchone()
-
-    if not admin:
-        conn.close()
-        return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
-
     body = json.loads(event.get('body') or '{}')
+    notify_type = body.get('type', 'message')
+
+    # file_uploaded — разрешено для авторизованных клиентов
+    if notify_type == 'file_uploaded':
+        cur.execute("""
+            SELECT u.id FROM sessions s JOIN users u ON s.user_id = u.id
+            WHERE s.id = %s AND s.expires_at > NOW()
+        """, (session_id,))
+        user = cur.fetchone()
+        if not user:
+            conn.close()
+            return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
+    else:
+        cur.execute("""
+            SELECT u.id, u.is_admin
+            FROM sessions s JOIN users u ON s.user_id = u.id
+            WHERE s.id = %s AND s.expires_at > NOW() AND u.is_admin = TRUE
+        """, (session_id,))
+        admin = cur.fetchone()
+        if not admin:
+            conn.close()
+            return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
+
     notify_type = body.get('type', 'message')
     project_id = body.get('project_id')
 
@@ -165,6 +177,30 @@ def handler(event: dict, context) -> dict:
     # Для счёта — всегда
     elif notify_type == 'invoice':
         send_invoice_email(email, project_title, body.get('invoice_title', ''), float(body.get('amount', 0)))
+
+    # Уведомление админу о новом файле от клиента
+    elif notify_type == 'file_uploaded':
+        admin_email = os.environ.get('ADMIN_EMAIL', '')
+        if not admin_email:
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': False, 'reason': 'no admin email'})}
+        file_name = body.get('file_name', 'файл')
+        file_url = body.get('file_url', '')
+        body_html = f"""
+        <div style="background: linear-gradient(135deg, #a855f7, #7c3aed); padding: 28px 32px;">
+          <h1 style="color: white; margin: 0; font-size: 20px; font-weight: 700;">📎 Клиент загрузил файл</h1>
+        </div>
+        <div style="padding: 28px 32px 16px; color: #e0e0e0;">
+          <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Клиент</p>
+          <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #fff;">{name}</p>
+          <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
+          <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
+          <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.25); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+            <p style="margin: 0 0 6px 0; color: #a0a0b0; font-size: 13px;">Файл</p>
+            <a href="{file_url}" style="color: #a855f7; font-size: 15px; text-decoration: underline;">{file_name}</a>
+          </div>
+        </div>
+        """
+        base_email(admin_email, f'Новый файл от клиента «{name}» — {project_title}', body_html)
 
     else:
         return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неизвестный тип уведомления'})}

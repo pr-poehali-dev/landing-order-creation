@@ -89,6 +89,9 @@ export const api = {
   adminSendMessage: (project_id: number, text: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'send_message', project_id, text }) }).then(r => r.json()),
 
+  notifyFileUploaded: (project_id: number, file_name: string, file_url: string) =>
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'file_uploaded', project_id, file_name, file_url }) }).then(r => r.json()),
+
   notifyIfOffline: (project_id: number, message_text: string) =>
     fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'message', project_id, message_text }) }).then(r => r.json()),
 
