@@ -56,6 +56,7 @@ export default function Admin() {
   const [unread, setUnread] = useState<Record<number, number>>({});
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
+  const fileInputTabRef = useRef<HTMLInputElement>(null);
   const [peerTyping, setPeerTyping] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
@@ -249,6 +250,21 @@ export default function Admin() {
   const deleteFile = async (fileId: number) => {
     await api.adminDeleteFile(fileId);
     setFiles(prev => prev.filter(f => f.id !== fileId));
+  };
+
+  const handleTabFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProject) return;
+    setUploadingFile(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      const res = await api.adminUploadFile(selectedProject.id, file.name, base64);
+      if (res.url) setFiles(prev => [...prev, { id: res.id, name: res.name, url: res.url, file_type: res.file_type }]);
+      setUploadingFile(false);
+      if (fileInputTabRef.current) fileInputTabRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
   };
 
   const addInvoice = async () => {
@@ -531,12 +547,21 @@ export default function Admin() {
 
                     {subTab === 'files' && (
                       <div>
+                        <input ref={fileInputTabRef} type="file" className="hidden" onChange={handleTabFileUpload} />
                         {!showFileForm ? (
-                          <button onClick={() => setShowFileForm(true)}
-                            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold mb-4"
-                            style={{ background: 'rgba(168,85,247,0.12)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)' }}>
-                            <Icon name="Plus" size={14} /> Добавить файл
-                          </button>
+                          <div className="flex gap-2 mb-4">
+                            <button onClick={() => setShowFileForm(true)}
+                              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                              style={{ background: 'rgba(168,85,247,0.12)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.2)' }}>
+                              <Icon name="Plus" size={14} /> Добавить файл
+                            </button>
+                            <button onClick={() => fileInputTabRef.current?.click()} disabled={uploadingFile}
+                              className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                              style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                              <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={14} />
+                              {uploadingFile ? 'Загрузка...' : 'Загрузить файл'}
+                            </button>
+                          </div>
                         ) : (
                           <div className="space-y-2 mb-4 p-4 rounded-xl" style={cardStyle}>
                             <input className={inputCls} style={inputStyle} placeholder="Название" value={newFile.name} onChange={e => setNewFile({ ...newFile, name: e.target.value })} />
