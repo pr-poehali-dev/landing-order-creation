@@ -1,7 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import Icon from '@/components/ui/icon';
+
+function playNotification() {
+  const ctx = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, ctx.currentTime);
+  osc.frequency.exponentialRampToValueAtTime(660, ctx.currentTime + 0.15);
+  gain.gain.setValueAtTime(0.3, ctx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+  osc.start(ctx.currentTime);
+  osc.stop(ctx.currentTime + 0.4);
+}
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'Новый' },
@@ -36,12 +51,38 @@ export default function Admin() {
   const [newInvoice, setNewInvoice] = useState({ title: '', amount: '', file_url: '' });
   const [showFileForm, setShowFileForm] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const lastMsgCountRef = useRef<Record<number, number>>({});
+  const selectedProjectRef = useRef<Project | null>(null);
+  const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
+
+  useEffect(() => { selectedProjectRef.current = selectedProject; }, [selectedProject]);
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   useEffect(() => {
     api.me().then(res => {
       if (res.error || !res.is_admin) { navigate('/login'); return; }
     });
     loadData();
+
+    const interval = setInterval(async () => {
+      const p = await api.adminGetProjects();
+      const allProjects: Project[] = p.projects || [];
+      for (const proj of allProjects) {
+        const r = await api.getMessages(proj.id);
+        const msgs: {id:number;is_admin:boolean}[] = r.messages || [];
+        const clientMsgs = msgs.filter(m => !m.is_admin);
+        const prev = lastMsgCountRef.current[proj.id] ?? clientMsgs.length;
+        if (clientMsgs.length > prev) {
+          playNotification();
+          if (selectedProjectRef.current?.id === proj.id) {
+            setMessages(r.messages || []);
+          }
+        }
+        lastMsgCountRef.current[proj.id] = clientMsgs.length;
+      }
+    }, 15000);
+
+    return () => clearInterval(interval);
   }, [navigate]);
 
   const loadData = async () => {
