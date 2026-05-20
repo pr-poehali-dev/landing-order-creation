@@ -51,6 +51,8 @@ export default function Admin() {
   const [newInvoice, setNewInvoice] = useState({ title: '', amount: '', file_url: '' });
   const [showFileForm, setShowFileForm] = useState(false);
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editUser, setEditUser] = useState({ name: '', email: '', password: '' });
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const selectedProjectRef = useRef<Project | null>(null);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
@@ -160,6 +162,24 @@ export default function Admin() {
     }
   };
 
+  const deleteUser = async (id: number) => {
+    if (!confirm('Удалить клиента? Все его проекты и данные будут удалены.')) return;
+    await api.adminDeleteUser(id);
+    loadData();
+  };
+
+  const startEditUser = (u: User) => {
+    setEditingUser(u);
+    setEditUser({ name: u.name, email: u.email, password: '' });
+  };
+
+  const saveEditUser = async () => {
+    if (!editingUser) return;
+    await api.adminUpdateUser(editingUser.id, editUser.name, editUser.email, editUser.password);
+    setEditingUser(null);
+    loadData();
+  };
+
   const createProject = async () => {
     await api.adminCreateProject(newProject.user_id, newProject.title, newProject.status, newProject.description);
     setShowNewProject(false); setNewProject({ user_id: 0, title: '', status: 'new', description: '' });
@@ -247,12 +267,34 @@ export default function Admin() {
 
             <div className="space-y-2">
               {users.map(u => (
-                <div key={u.id} className="flex items-center justify-between p-4 rounded-xl" style={cardStyle}>
-                  <div>
-                    <div className="font-semibold text-sm">{u.name}</div>
-                    <div className="text-white/40 text-xs">{u.email}</div>
-                  </div>
-                  <div className="text-white/30 text-xs">ID: {u.id}</div>
+                <div key={u.id} className="rounded-xl" style={cardStyle}>
+                  {editingUser?.id === u.id ? (
+                    <div className="p-4 space-y-2">
+                      <input className={inputCls} style={inputStyle} placeholder="Имя" value={editUser.name} onChange={e => setEditUser({ ...editUser, name: e.target.value })} />
+                      <input className={inputCls} style={inputStyle} placeholder="Email" value={editUser.email} onChange={e => setEditUser({ ...editUser, email: e.target.value })} />
+                      <input className={inputCls} style={inputStyle} placeholder="Новый пароль (необязательно)" type="password" value={editUser.password} onChange={e => setEditUser({ ...editUser, password: e.target.value })} />
+                      <div className="flex gap-2">
+                        <button onClick={saveEditUser} className="px-4 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>Сохранить</button>
+                        <button onClick={() => setEditingUser(null)} className="px-4 py-2 rounded-xl text-sm text-white/40 hover:text-white/60">Отмена</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between p-4">
+                      <div>
+                        <div className="font-semibold text-sm">{u.name}</div>
+                        <div className="text-white/40 text-xs">{u.email}</div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-white/20 text-xs mr-2">ID: {u.id}</span>
+                        <button onClick={() => startEditUser(u)} className="p-2 rounded-lg hover:bg-white/5 text-white/40 hover:text-white/80 transition-colors">
+                          <Icon name="Pencil" size={14} />
+                        </button>
+                        <button onClick={() => deleteUser(u.id)} className="p-2 rounded-lg hover:bg-red-500/10 text-white/40 hover:text-red-400 transition-colors">
+                          <Icon name="Trash2" size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
               {users.length === 0 && <p className="text-white/30 text-sm text-center py-8">Клиентов пока нет</p>}

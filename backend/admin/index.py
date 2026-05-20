@@ -143,6 +143,39 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': inv_id})}
 
+        # delete_user
+        if act == 'delete_user':
+            uid = body.get('user_id')
+            if not uid:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'user_id обязателен'})}
+            cur.execute("DELETE FROM messages WHERE project_id IN (SELECT id FROM projects WHERE user_id = %s)", (uid,))
+            cur.execute("DELETE FROM project_files WHERE project_id IN (SELECT id FROM projects WHERE user_id = %s)", (uid,))
+            cur.execute("DELETE FROM invoices WHERE project_id IN (SELECT id FROM projects WHERE user_id = %s)", (uid,))
+            cur.execute("DELETE FROM projects WHERE user_id = %s", (uid,))
+            cur.execute("DELETE FROM sessions WHERE user_id = %s", (uid,))
+            cur.execute("DELETE FROM users WHERE id = %s AND is_admin = FALSE", (uid,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # update_user
+        if act == 'update_user':
+            uid = body.get('user_id')
+            name = body.get('name', '').strip()
+            email = body.get('email', '').strip().lower()
+            password = body.get('password', '').strip()
+            if not uid or not name or not email:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'user_id, name и email обязательны'})}
+            if password:
+                cur.execute("UPDATE users SET name = %s, email = %s, password_hash = %s WHERE id = %s AND is_admin = FALSE", (name, email, hash_password(password), uid))
+            else:
+                cur.execute("UPDATE users SET name = %s, email = %s WHERE id = %s AND is_admin = FALSE", (name, email, uid))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
         # send_message (от имени админа)
         if act == 'send_message':
             admin_id = admin[0]

@@ -59,6 +59,12 @@ export const api = {
   adminAddInvoice: (project_id: number, title: string, amount: number, file_url: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'add_invoice', project_id, title, amount, file_url }) }).then(r => r.json()),
 
+  adminDeleteUser: (user_id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_user', user_id }) }).then(r => r.json()),
+
+  adminUpdateUser: (user_id: number, name: string, email: string, password: string) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'update_user', user_id, name, email, password }) }).then(r => r.json()),
+
   adminSendMessage: (project_id: number, text: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'send_message', project_id, text }) }).then(r => r.json()),
 
