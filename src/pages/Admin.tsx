@@ -260,7 +260,7 @@ export default function Admin() {
             <div className="lg:w-72 shrink-0">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-['Oswald'] font-bold text-xl">Проекты</h2>
-                <button onClick={() => setShowNewProject(true)}
+                <button onClick={() => { setShowNewProject(true); loadData(); }}
                   className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold"
                   style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.25)' }}>
                   <Icon name="Plus" size={13} /> Новый
