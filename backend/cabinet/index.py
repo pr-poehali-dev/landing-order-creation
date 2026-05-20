@@ -1,6 +1,10 @@
 import json
 import os
+import base64
+import mimetypes
+import uuid
 import psycopg2
+import boto3
 from datetime import datetime
 
 
@@ -99,6 +103,35 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': row[0], 'created_at': json_serial(row[1]), 'author': user_name, 'is_admin': is_admin, 'text': text})}
+
+        if act == 'upload_file':
+            pid = body.get('project_id')
+            file_name = body.get('file_name', 'file')
+            file_data = body.get('file_data', '')
+            if not pid or not file_data:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id и file_data обязательны'})}
+            cur.execute("SELECT id FROM projects WHERE id = %s AND user_id = %s", (pid, user_id))
+            if not cur.fetchone():
+                conn.close()
+                return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Доступ запрещён'})}
+            raw = base64.b64decode(file_data)
+            ext = os.path.splitext(file_name)[1].lower()
+            content_type = mimetypes.guess_type(file_name)[0] or 'application/octet-stream'
+            key = f"chat/{pid}/{uuid.uuid4().hex}{ext}"
+            s3 = boto3.client('s3',
+                endpoint_url='https://bucket.poehali.dev',
+                aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+            s3.put_object(Bucket='files', Key=key, Body=raw, ContentType=content_type)
+            cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+            file_type = 'image' if content_type.startswith('image') else 'document'
+            cur.execute("INSERT INTO project_files (project_id, name, url, file_type) VALUES (%s, %s, %s, %s) RETURNING id",
+                (pid, file_name, cdn_url, file_type))
+            file_id = cur.fetchone()[0]
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': file_id, 'url': cdn_url, 'file_type': file_type, 'name': file_name})}
 
     # GET ?action=invoices&project_id=X
     if method == 'GET' and action == 'invoices' and project_id:

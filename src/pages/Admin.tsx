@@ -54,6 +54,8 @@ export default function Admin() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editUser, setEditUser] = useState({ name: '', email: '', password: '' });
   const [unread, setUnread] = useState<Record<number, number>>({});
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const selectedProjectRef = useRef<Project | null>(null);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
@@ -153,6 +155,26 @@ export default function Admin() {
     setMessages(prev => [...prev, { ...res, is_admin: true, author: 'Команда', text }]);
     setMsgText('');
     api.notifyIfOffline(selectedProject.id, text);
+  };
+
+  const handleAdminFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !selectedProject) return;
+    setUploadingFile(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      const res = await api.adminUploadFile(selectedProject.id, file.name, base64);
+      if (res.url) {
+        const text = res.file_type === 'image' ? `[img:${res.url}]` : `[file:${res.url}:${res.name}]`;
+        const msgRes = await api.adminSendMessage(selectedProject.id, text);
+        setMessages(prev => [...prev, { ...msgRes, is_admin: true, author: 'Команда', text }]);
+        api.notifyIfOffline(selectedProject.id, `📎 Файл: ${res.name}`);
+      }
+      setUploadingFile(false);
+      if (fileInputAdminRef.current) fileInputAdminRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
   };
 
   const updateStatus = async (status: string) => {
@@ -434,12 +456,26 @@ export default function Admin() {
                                 <div className="text-xs mb-1 font-semibold" style={{ color: m.is_admin ? '#a855f7' : '#00f5ff' }}>
                                   {m.is_admin ? 'Команда' : m.author}
                                 </div>
-                                <p className="text-white/80">{m.text}</p>
+                                {m.text.startsWith('[img:') ? (
+                                  <a href={m.text.slice(5, -1)} target="_blank" rel="noreferrer">
+                                    <img src={m.text.slice(5, -1)} alt="img" className="max-w-[220px] rounded-xl mt-1" />
+                                  </a>
+                                ) : m.text.startsWith('[file:') ? (() => {
+                                  const parts = m.text.slice(6, -1).split(':');
+                                  const url = parts[0]; const name = parts.slice(1).join(':');
+                                  return <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-purple-400 underline text-sm mt-1"><Icon name="Paperclip" size={13} />{name}</a>;
+                                })() : <p className="text-white/80">{m.text}</p>}
                               </div>
                             </div>
                           ))}
                         </div>
+                        <input ref={fileInputAdminRef} type="file" className="hidden" onChange={handleAdminFileUpload} />
                         <div className="flex gap-2">
+                          <button onClick={() => fileInputAdminRef.current?.click()} disabled={uploadingFile}
+                            className="px-3 py-3 rounded-xl transition-opacity hover:opacity-80"
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                            <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={16} className="text-white/50" />
+                          </button>
                           <input value={msgText} onChange={e => setMsgText(e.target.value)}
                             onKeyDown={e => e.key === 'Enter' && sendMessage()}
                             placeholder="Ответить клиенту..."

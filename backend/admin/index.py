@@ -1,7 +1,11 @@
 import json
 import os
 import hashlib
+import base64
+import mimetypes
+import uuid
 import psycopg2
+import boto3
 from datetime import datetime
 
 
@@ -175,6 +179,32 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # upload_file — загрузка файла в S3, сохранение в project_files
+        if act == 'upload_file':
+            project_id = body.get('project_id')
+            file_name = body.get('file_name', 'file')
+            file_data = body.get('file_data', '')
+            if not project_id or not file_data:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id и file_data обязательны'})}
+            raw = base64.b64decode(file_data)
+            ext = os.path.splitext(file_name)[1].lower()
+            content_type = mimetypes.guess_type(file_name)[0] or 'application/octet-stream'
+            key = f"chat/{project_id}/{uuid.uuid4().hex}{ext}"
+            s3 = boto3.client('s3',
+                endpoint_url='https://bucket.poehali.dev',
+                aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+            s3.put_object(Bucket='files', Key=key, Body=raw, ContentType=content_type)
+            cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+            file_type = 'image' if content_type.startswith('image') else 'document'
+            cur.execute("INSERT INTO project_files (project_id, name, url, file_type) VALUES (%s, %s, %s, %s) RETURNING id",
+                (project_id, file_name, cdn_url, file_type))
+            file_id = cur.fetchone()[0]
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': file_id, 'url': cdn_url, 'file_type': file_type, 'name': file_name})}
 
         # send_message (от имени админа)
         if act == 'send_message':

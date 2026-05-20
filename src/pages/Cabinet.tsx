@@ -130,6 +130,28 @@ export default function Cabinet() {
     setMsgText('');
   };
 
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !active) return;
+    setUploadingFile(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      const res = await api.uploadFile(active.id, file.name, base64);
+      if (res.url) {
+        const text = res.file_type === 'image' ? `[img:${res.url}]` : `[file:${res.url}:${res.name}]`;
+        const msgRes = await api.sendMessage(active.id, text);
+        setMessages(prev => [...prev, msgRes]);
+      }
+      setUploadingFile(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+    reader.readAsDataURL(file);
+  };
+
   const logout = async () => {
     await api.logout();
     localStorage.removeItem('session_id');
@@ -262,12 +284,26 @@ export default function Cabinet() {
                               ? { background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.2)' }
                               : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
                             {m.is_admin && <div className="text-xs text-purple-400 mb-1 font-semibold">Команда</div>}
-                            <p className="text-white/80">{m.text}</p>
+                            {m.text.startsWith('[img:') ? (
+                              <a href={m.text.slice(5, -1)} target="_blank" rel="noreferrer">
+                                <img src={m.text.slice(5, -1)} alt="img" className="max-w-[220px] rounded-xl mt-1" />
+                              </a>
+                            ) : m.text.startsWith('[file:') ? (() => {
+                              const parts = m.text.slice(6, -1).split(':');
+                              const url = parts[0]; const name = parts.slice(1).join(':');
+                              return <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-purple-400 underline text-sm mt-1"><Icon name="Paperclip" size={13} />{name}</a>;
+                            })() : <p className="text-white/80">{m.text}</p>}
                           </div>
                         </div>
                       ))}
                     </div>
+                    <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
                     <div className="flex gap-2">
+                      <button onClick={() => fileInputRef.current?.click()} disabled={uploadingFile}
+                        className="px-3 py-3 rounded-xl transition-opacity hover:opacity-80"
+                        style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={16} className="text-white/50" />
+                      </button>
                       <input value={msgText} onChange={e => setMsgText(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && sendMessage()}
                         placeholder="Написать сообщение..."
