@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/ui/icon";
-import { CITIES } from "@/data/cities";
+import { CITIES, City } from "@/data/cities";
 
 const PORTFOLIO = [
   {
@@ -271,13 +271,21 @@ function StarRating({ count }: { count: number }) {
   );
 }
 
-export default function Index() {
+export default function Index({ city }: { city?: City }) {
   useReveal();
   const [form, setForm] = useState({ name: "", phone: "", email: "", comment: "" });
   const [submitted, setSubmitted] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (city) {
+      document.title = `Создание лендинга в ${city.nameIn} — LandingGuru.ru`;
+      const desc = document.querySelector("meta[name='description']");
+      if (desc) desc.setAttribute("content", `Заказать лендинг в ${city.nameIn} под ключ. Разработка за 5 дней, уникальный дизайн, гарантия результата.`);
+    }
+  }, [city]);
 
   const scrollToForm = () => {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -288,7 +296,7 @@ export default function Index() {
     await fetch('https://functions.poehali.dev/03da1169-73aa-4c48-b325-94ad3d6e3160', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, city: city?.name }),
     });
     setSubmitted(true);
   };
@@ -339,28 +347,42 @@ export default function Index() {
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-8 text-sm font-medium"
             style={{ border: "1px solid rgba(168,85,247,0.4)", background: "rgba(168,85,247,0.08)", color: "#c084fc" }}>
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse inline-block"></span>
-            Принимаем заказы · Срок от 5 дней
+            {city ? `${city.name} · Срок от 5 дней` : "Принимаем заказы · Срок от 5 дней"}
           </div>
 
           <h1 className="font-oswald font-black text-5xl sm:text-6xl md:text-8xl lg:text-9xl leading-none mb-6 animate-fade-in"
             style={{ animationDelay: "0.1s" }}>
-            ЛЕНДИНГ,
-            <br />
-            <span className="gradient-text">КОТОРЫЙ</span>
-            <br />
-            ПРОДАЁТ
+            {city ? (
+              <>
+                ЛЕНДИНГ
+                <br />
+                <span className="gradient-text">В {city.name.toUpperCase()}</span>
+                <br />
+                ПОД КЛЮЧ
+              </>
+            ) : (
+              <>
+                ЛЕНДИНГ,
+                <br />
+                <span className="gradient-text">КОТОРЫЙ</span>
+                <br />
+                ПРОДАЁТ
+              </>
+            )}
           </h1>
 
           <p className="text-white/60 text-lg md:text-xl max-w-2xl mx-auto mb-10 animate-fade-in"
             style={{ animationDelay: "0.3s" }}>
-            Создаём продающие страницы под ключ. Уникальный дизайн, быстрая разработка и реальные заявки от клиентов.
+            {city
+              ? `Создаём продающие лендинги в ${city.nameIn} под ключ. Уникальный дизайн, быстрая разработка и реальные заявки от клиентов.`
+              : "Создаём продающие страницы под ключ. Уникальный дизайн, быстрая разработка и реальные заявки от клиентов."}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in"
             style={{ animationDelay: "0.5s" }}>
             <button onClick={scrollToForm}
               className="btn-glow px-8 py-4 rounded-2xl text-white font-bold text-lg">
-              Получить консультацию
+              {city ? `Заказать лендинг в ${city.nameIn}` : "Получить консультацию"}
             </button>
             <a href="#portfolio"
               className="btn-outline-glow px-8 py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2">
