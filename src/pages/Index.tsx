@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "@/components/ui/icon";
+import { CITIES } from "@/data/cities";
 
 const PORTFOLIO = [
   {
@@ -652,6 +653,33 @@ export default function Index() {
                 <div className="text-2xl mb-1">{icon}</div>
                 <div className="text-white/40 text-xs">{label}</div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CITIES */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-10 section-reveal">
+            <span className="text-sm font-semibold uppercase tracking-widest text-purple-400 mb-4 block">География</span>
+            <h2 className="font-oswald font-black text-3xl sm:text-4xl mb-3">
+              РАБОТАЕМ ПО ВСЕЙ <span className="gradient-text">РОССИИ</span>
+            </h2>
+            <p className="text-white/40 text-base max-w-lg mx-auto">
+              Создаём лендинги для бизнеса в крупнейших городах страны
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 justify-center section-reveal">
+            {CITIES.map(city => (
+              <a
+                key={city.slug}
+                href={`/landing-${city.slug}`}
+                className="px-3 py-1.5 rounded-full text-sm text-white/50 hover:text-white transition-colors"
+                style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
+              >
+                Лендинг в {city.nameIn}
+              </a>
             ))}
           </div>
         </div>
