@@ -6,252 +6,252 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-moskva</loc>
+    <loc>https://landingguru.ru/landing/moskva</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-spb</loc>
+    <loc>https://landingguru.ru/landing/spb</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-novosibirsk</loc>
+    <loc>https://landingguru.ru/landing/novosibirsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-ekaterinburg</loc>
+    <loc>https://landingguru.ru/landing/ekaterinburg</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-kazan</loc>
+    <loc>https://landingguru.ru/landing/kazan</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-nizhny-novgorod</loc>
+    <loc>https://landingguru.ru/landing/nizhny-novgorod</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-chelyabinsk</loc>
+    <loc>https://landingguru.ru/landing/chelyabinsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-omsk</loc>
+    <loc>https://landingguru.ru/landing/omsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-samara</loc>
+    <loc>https://landingguru.ru/landing/samara</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-rostov-na-donu</loc>
+    <loc>https://landingguru.ru/landing/rostov-na-donu</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-ufa</loc>
+    <loc>https://landingguru.ru/landing/ufa</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-krasnoyarsk</loc>
+    <loc>https://landingguru.ru/landing/krasnoyarsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-voronezh</loc>
+    <loc>https://landingguru.ru/landing/voronezh</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-perm</loc>
+    <loc>https://landingguru.ru/landing/perm</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-volgograd</loc>
+    <loc>https://landingguru.ru/landing/volgograd</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-krasnodar</loc>
+    <loc>https://landingguru.ru/landing/krasnodar</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-saratov</loc>
+    <loc>https://landingguru.ru/landing/saratov</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-tyumen</loc>
+    <loc>https://landingguru.ru/landing/tyumen</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-tolyatti</loc>
+    <loc>https://landingguru.ru/landing/tolyatti</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-izhevsk</loc>
+    <loc>https://landingguru.ru/landing/izhevsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-barnaul</loc>
+    <loc>https://landingguru.ru/landing/barnaul</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-ulyanovsk</loc>
+    <loc>https://landingguru.ru/landing/ulyanovsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-irkutsk</loc>
+    <loc>https://landingguru.ru/landing/irkutsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-habarovsk</loc>
+    <loc>https://landingguru.ru/landing/habarovsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-yaroslavl</loc>
+    <loc>https://landingguru.ru/landing/yaroslavl</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-vladivostok</loc>
+    <loc>https://landingguru.ru/landing/vladivostok</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-makhachkala</loc>
+    <loc>https://landingguru.ru/landing/makhachkala</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-tomsk</loc>
+    <loc>https://landingguru.ru/landing/tomsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-orenburg</loc>
+    <loc>https://landingguru.ru/landing/orenburg</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-kemerovo</loc>
+    <loc>https://landingguru.ru/landing/kemerovo</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-novokuznetsk</loc>
+    <loc>https://landingguru.ru/landing/novokuznetsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-ryazan</loc>
+    <loc>https://landingguru.ru/landing/ryazan</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-astrakhan</loc>
+    <loc>https://landingguru.ru/landing/astrakhan</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-naberezhnye-chelny</loc>
+    <loc>https://landingguru.ru/landing/naberezhnye-chelny</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-penza</loc>
+    <loc>https://landingguru.ru/landing/penza</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-lipetsk</loc>
+    <loc>https://landingguru.ru/landing/lipetsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-tula</loc>
+    <loc>https://landingguru.ru/landing/tula</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-kirov</loc>
+    <loc>https://landingguru.ru/landing/kirov</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-cheboksary</loc>
+    <loc>https://landingguru.ru/landing/cheboksary</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-bryansk</loc>
+    <loc>https://landingguru.ru/landing/bryansk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-kursk</loc>
+    <loc>https://landingguru.ru/landing/kursk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-ivanovo</loc>
+    <loc>https://landingguru.ru/landing/ivanovo</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-magnitogorsk</loc>
+    <loc>https://landingguru.ru/landing/magnitogorsk</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-tver</loc>
+    <loc>https://landingguru.ru/landing/tver</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-stavropol</loc>
+    <loc>https://landingguru.ru/landing/stavropol</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-belgorod</loc>
+    <loc>https://landingguru.ru/landing/belgorod</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-cherepovets</loc>
+    <loc>https://landingguru.ru/landing/cherepovets</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-kaliningrad</loc>
+    <loc>https://landingguru.ru/landing/kaliningrad</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-sochi</loc>
+    <loc>https://landingguru.ru/landing/sochi</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://landingguru.ru/landing-surgut</loc>
+    <loc>https://landingguru.ru/landing/surgut</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

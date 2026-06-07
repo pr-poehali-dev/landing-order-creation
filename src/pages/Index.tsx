@@ -696,7 +696,7 @@ export default function Index({ city }: { city?: City }) {
             {CITIES.map(city => (
               <a
                 key={city.slug}
-                href={`/landing-${city.slug}`}
+                href={`/landing/${city.slug}`}
                 className="px-3 py-1.5 rounded-full text-sm text-white/50 hover:text-white transition-colors"
                 style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}
               >

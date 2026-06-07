@@ -24,7 +24,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/cabinet" element={<Cabinet />} />
           <Route path="/admin" element={<Admin />} />
-          <Route path="/landing-:citySlug" element={<CityLanding />} />
+          <Route path="/landing/:citySlug" element={<CityLanding />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
