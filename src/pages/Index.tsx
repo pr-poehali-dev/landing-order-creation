@@ -670,7 +670,7 @@ export default function Index({ city }: { city?: City }) {
           </div>
 
           <div className="flex justify-center gap-8 mt-8 section-reveal">
-            {[["🔒", "Безопасно"], ["⚡", "30 мин"], ["✅", "Договор"]].map(([icon, label]) => (
+            {[["🔒", "Безопасно"], ["⚡", "30 мин"]].map(([icon, label]) => (
               <div key={label} className="text-center">
                 <div className="text-2xl mb-1">{icon}</div>
                 <div className="text-white/40 text-xs">{label}</div>
