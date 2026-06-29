@@ -274,6 +274,7 @@ function StarRating({ count }: { count: number }) {
 export default function Index({ city }: { city?: City }) {
   useReveal();
   const [form, setForm] = useState({ name: "", phone: "", email: "", comment: "" });
+  const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
@@ -651,20 +652,29 @@ export default function Index({ city }: { city?: City }) {
                     onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
                   />
                 </div>
+                <label className="flex items-start gap-3 cursor-pointer select-none mt-1">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                    className="mt-0.5 w-5 h-5 shrink-0 rounded accent-purple-500 cursor-pointer"
+                  />
+                  <span className="text-white/50 text-xs leading-relaxed">
+                    Я даю согласие на обработку персональных данных и принимаю{" "}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setShowPrivacy(true); }}
+                      className="underline underline-offset-2 text-white/70 hover:text-white transition-colors"
+                    >
+                      политику конфиденциальности
+                    </button>
+                  </span>
+                </label>
                 <button type="submit"
-                  className="btn-glow w-full py-4 rounded-xl text-white font-bold text-lg mt-2">
+                  disabled={!consent}
+                  className="btn-glow w-full py-4 rounded-xl text-white font-bold text-lg mt-2 disabled:opacity-40 disabled:cursor-not-allowed">
                   Отправить заявку
                 </button>
-                <p className="text-center text-white/30 text-xs">
-                  Нажимая кнопку, вы соглашаетесь с{" "}
-                  <button
-                    type="button"
-                    onClick={() => setShowPrivacy(true)}
-                    className="underline underline-offset-2 hover:text-white/60 transition-colors"
-                  >
-                    политикой конфиденциальности
-                  </button>
-                </p>
               </form>
             )}
           </div>
