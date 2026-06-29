@@ -30,7 +30,58 @@ LandingGuru.ru создаёт продающие лендинги под клю�
 
 ## География
 
-Работаем по всей России — создаём лендинги для бизнеса в крупнейших городах страны. Страницы для конкретных городов доступны по адресу https://landingguru.ru/landing/{город}
+Работаем по всей России — создаём лендинги для бизнеса в крупнейших городах страны. Страницы для конкретных городов:
+
+- Москва: https://landingguru.ru/landing/moskva
+- Санкт-Петербург: https://landingguru.ru/landing/spb
+- Новосибирск: https://landingguru.ru/landing/novosibirsk
+- Екатеринбург: https://landingguru.ru/landing/ekaterinburg
+- Казань: https://landingguru.ru/landing/kazan
+- Нижний Новгород: https://landingguru.ru/landing/nizhny-novgorod
+- Челябинск: https://landingguru.ru/landing/chelyabinsk
+- Омск: https://landingguru.ru/landing/omsk
+- Самара: https://landingguru.ru/landing/samara
+- Ростов-на-Дону: https://landingguru.ru/landing/rostov-na-donu
+- Уфа: https://landingguru.ru/landing/ufa
+- Красноярск: https://landingguru.ru/landing/krasnoyarsk
+- Воронеж: https://landingguru.ru/landing/voronezh
+- Пермь: https://landingguru.ru/landing/perm
+- Волгоград: https://landingguru.ru/landing/volgograd
+- Краснодар: https://landingguru.ru/landing/krasnodar
+- Саратов: https://landingguru.ru/landing/saratov
+- Тюмень: https://landingguru.ru/landing/tyumen
+- Тольятти: https://landingguru.ru/landing/tolyatti
+- Ижевск: https://landingguru.ru/landing/izhevsk
+- Барнаул: https://landingguru.ru/landing/barnaul
+- Ульяновск: https://landingguru.ru/landing/ulyanovsk
+- Иркутск: https://landingguru.ru/landing/irkutsk
+- Хабаровск: https://landingguru.ru/landing/habarovsk
+- Ярославль: https://landingguru.ru/landing/yaroslavl
+- Владивосток: https://landingguru.ru/landing/vladivostok
+- Махачкала: https://landingguru.ru/landing/makhachkala
+- Томск: https://landingguru.ru/landing/tomsk
+- Оренбург: https://landingguru.ru/landing/orenburg
+- Кемерово: https://landingguru.ru/landing/kemerovo
+- Новокузнецк: https://landingguru.ru/landing/novokuznetsk
+- Рязань: https://landingguru.ru/landing/ryazan
+- Астрахань: https://landingguru.ru/landing/astrakhan
+- Набережные Челны: https://landingguru.ru/landing/naberezhnye-chelny
+- Пенза: https://landingguru.ru/landing/penza
+- Липецк: https://landingguru.ru/landing/lipetsk
+- Тула: https://landingguru.ru/landing/tula
+- Киров: https://landingguru.ru/landing/kirov
+- Чебоксары: https://landingguru.ru/landing/cheboksary
+- Брянск: https://landingguru.ru/landing/bryansk
+- Курск: https://landingguru.ru/landing/kursk
+- Иваново: https://landingguru.ru/landing/ivanovo
+- Магнитогорск: https://landingguru.ru/landing/magnitogorsk
+- Тверь: https://landingguru.ru/landing/tver
+- Ставрополь: https://landingguru.ru/landing/stavropol
+- Белгород: https://landingguru.ru/landing/belgorod
+- Череповец: https://landingguru.ru/landing/cherepovets
+- Калининград: https://landingguru.ru/landing/kaliningrad
+- Сочи: https://landingguru.ru/landing/sochi
+- Сургут: https://landingguru.ru/landing/surgut
 
 ## Контакты
 
