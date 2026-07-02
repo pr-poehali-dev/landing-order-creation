@@ -10,9 +10,9 @@ const PORTFOLIO = [
     color: "#a855f7",
   },
   {
-    title: "SaaS платформа",
-    category: "Технологии",
-    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/e2583474-8c28-4984-b1df-7c57f7ef3e88.jpg",
+    title: "Автомойка",
+    category: "Авто",
+    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/06e9aeb6-62f6-4771-ac96-80e5f724169d.jpg",
     color: "#00f5ff",
   },
   {
