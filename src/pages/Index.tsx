@@ -4,9 +4,9 @@ import { CITIES, City } from "@/data/cities";
 
 const PORTFOLIO = [
   {
-    title: "Интернет-магазин",
-    category: "E-commerce",
-    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/b4b94438-737c-4a53-a2c7-4c99bc29b82a.jpg",
+    title: "Автосервис",
+    category: "Авто",
+    img: "https://cdn.poehali.dev/projects/11278de9-bb64-4412-99d5-6610112c9f28/files/6e9491da-8931-4aab-a44e-dd86f7a0f84f.jpg",
     color: "#a855f7",
   },
   {
