@@ -729,7 +729,6 @@ export default function Index({ city }: { city?: City }) {
           </div>
           <p className="text-white/30 text-sm text-center">© 2026 LandingGuru.ru. Все права защищены.<br className="sm:hidden" /><span className="hidden sm:inline"> · </span>ИНН 352527263810</p>
           <div className="flex gap-6 text-sm text-white/40">
-            <a href="/sitemap.xml" className="hover:text-white/70 transition-colors">Карта сайта</a>
             <button onClick={() => setShowPrivacy(true)} className="hover:text-white/70 transition-colors">Политика конфиденциальности</button>
           </div>
         </div>
