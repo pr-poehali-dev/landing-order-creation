@@ -31,6 +31,10 @@ export default function Cabinet() {
   const activeRef = useRef<Project | null>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const [unread, setUnread] = useState<Record<number, number>>({});
+  const [soundOn, setSoundOn] = useState(() => localStorage.getItem('sound_off') !== '1');
+  const soundOnRef = useRef(soundOn);
+  useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
+  const toggleSound = () => setSoundOn(v => { localStorage.setItem('sound_off', v ? '1' : '0'); return !v; });
 
   useEffect(() => { activeRef.current = active; }, [active]);
 
@@ -87,7 +91,7 @@ export default function Cabinet() {
         const adminMsgs = msgs.filter(m => m.is_admin);
         const prev = lastMsgCountRef.current[proj.id] ?? adminMsgs.length;
         if (adminMsgs.length > prev) {
-          playNotification(660, 880);
+          if (soundOnRef.current) playNotification(660, 880);
           if (Notification.permission === 'granted') {
             new Notification(`💬 Новое сообщение — ${proj.title}`, {
               body: adminMsgs[adminMsgs.length - 1]?.text || 'Команда написала вам',
@@ -220,6 +224,10 @@ export default function Cabinet() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-white/40 text-sm hidden sm:block">{user?.name}</span>
+          <button onClick={toggleSound} title={soundOn ? 'Звук включён' : 'Звук выключен'}
+            className="flex items-center text-sm text-white/40 hover:text-white/70 transition-colors">
+            <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={16} />
+          </button>
           <button onClick={logout}
             className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
             <Icon name="LogOut" size={15} />

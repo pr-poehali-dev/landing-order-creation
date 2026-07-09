@@ -43,6 +43,10 @@ export default function Admin() {
   const [unread, setUnread] = useState<Record<number, number>>({});
   const [chatBlink, setChatBlink] = useState(false);
   const blinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [soundOn, setSoundOn] = useState(() => localStorage.getItem('sound_off') !== '1');
+  const soundOnRef = useRef(soundOn);
+  useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
+  const toggleSound = () => setSoundOn(v => { localStorage.setItem('sound_off', v ? '1' : '0'); return !v; });
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
@@ -96,7 +100,7 @@ export default function Admin() {
         const clientMsgs = msgs.filter(m => !m.is_admin);
         const prev = lastMsgCountRef.current[proj.id] ?? clientMsgs.length;
         if (clientMsgs.length > prev) {
-          playNotification();
+          if (soundOnRef.current) playNotification();
           setChatBlink(false);
           requestAnimationFrame(() => setChatBlink(true));
           if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
@@ -304,9 +308,15 @@ export default function Admin() {
           </div>
           <span className="font-['Oswald'] font-bold tracking-wide">LANDINGGURU — АДМИН</span>
         </div>
-        <button onClick={logout} className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
-          <Icon name="LogOut" size={15} /> Выйти
-        </button>
+        <div className="flex items-center gap-4">
+          <button onClick={toggleSound} title={soundOn ? 'Звук включён' : 'Звук выключен'}
+            className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
+            <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={16} />
+          </button>
+          <button onClick={logout} className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
+            <Icon name="LogOut" size={15} /> Выйти
+          </button>
+        </div>
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
