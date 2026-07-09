@@ -684,10 +684,12 @@ export default function Admin() {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
-                                  <button onClick={() => deleteInvoice(inv.id)} title="Отменить счёт"
-                                    className="text-white/30 hover:text-red-400 transition-colors">
-                                    <Icon name="Trash2" size={15} />
-                                  </button>
+                                  {inv.status !== 'paid' && (
+                                    <button onClick={() => deleteInvoice(inv.id)} title="Отменить счёт"
+                                      className="text-white/30 hover:text-red-400 transition-colors">
+                                      <Icon name="Trash2" size={15} />
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                               {inv.status === 'awaiting' && (
