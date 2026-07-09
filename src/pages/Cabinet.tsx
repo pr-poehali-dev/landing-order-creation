@@ -34,7 +34,14 @@ export default function Cabinet() {
   const [soundOn, setSoundOn] = useState(() => localStorage.getItem('sound_off') !== '1');
   const soundOnRef = useRef(soundOn);
   useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
-  const toggleSound = () => setSoundOn(v => { localStorage.setItem('sound_off', v ? '1' : '0'); return !v; });
+  const [showSoundHint, setShowSoundHint] = useState(() => !localStorage.getItem('sound_hint_seen'));
+  const dismissHint = () => { localStorage.setItem('sound_hint_seen', '1'); setShowSoundHint(false); };
+  const toggleSound = () => { dismissHint(); setSoundOn(v => { localStorage.setItem('sound_off', v ? '1' : '0'); return !v; }); };
+  useEffect(() => {
+    if (!showSoundHint) return;
+    const t = setTimeout(dismissHint, 10000);
+    return () => clearTimeout(t);
+  }, [showSoundHint]);
 
   useEffect(() => { activeRef.current = active; }, [active]);
 
@@ -224,10 +231,24 @@ export default function Cabinet() {
         </div>
         <div className="flex items-center gap-3">
           <span className="text-white/40 text-sm hidden sm:block">{user?.name}</span>
-          <button onClick={toggleSound} title={soundOn ? 'Звук включён' : 'Звук выключен'}
-            className="flex items-center text-sm text-white/40 hover:text-white/70 transition-colors">
-            <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={16} />
-          </button>
+          <div className="relative flex items-center">
+            <button onClick={toggleSound} title={soundOn ? 'Звук включён' : 'Звук выключен'}
+              className="flex items-center text-sm text-white/40 hover:text-white/70 transition-colors">
+              <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={16} />
+            </button>
+            {showSoundHint && (
+              <div className="absolute top-full right-0 mt-3 w-60 p-3 rounded-xl text-left z-50 animate-in fade-in slide-in-from-top-1"
+                style={{ background: '#a855f7', boxShadow: '0 8px 24px rgba(168,85,247,0.4)' }}>
+                <div className="absolute -top-1.5 right-2.5 w-3 h-3 rotate-45" style={{ background: '#a855f7' }} />
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-white text-xs leading-snug">Здесь можно включить или выключить звук уведомлений о новых сообщениях.</p>
+                  <button onClick={dismissHint} className="text-white/70 hover:text-white shrink-0">
+                    <Icon name="X" size={14} />
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
           <button onClick={logout}
             className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
             <Icon name="LogOut" size={15} />
