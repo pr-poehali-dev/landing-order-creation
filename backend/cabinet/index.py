@@ -119,6 +119,20 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': row[0], 'created_at': json_serial(row[1]), 'author': user_name, 'is_admin': is_admin, 'text': text})}
 
+        # mark_paid — клиент сообщает, что оплатил счёт (ждёт подтверждения)
+        if act == 'mark_paid':
+            invoice_id = body.get('invoice_id')
+            if not invoice_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'invoice_id обязателен'})}
+            cur.execute("""
+                UPDATE invoices SET status = 'awaiting'
+                WHERE id = %s AND project_id IN (SELECT id FROM projects WHERE user_id = %s) AND status = 'pending'
+            """, (invoice_id, user_id))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
         if act == 'typing':
             pid = body.get('project_id')
             if pid:

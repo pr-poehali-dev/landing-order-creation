@@ -154,6 +154,12 @@ export default function Cabinet() {
     if (active) loadTab(t, active.id);
   };
 
+  const markPaid = async (invoiceId: number) => {
+    setInvoices(prev => prev.map(i => i.id === invoiceId ? { ...i, status: 'awaiting' } : i));
+    await api.markInvoicePaid(invoiceId);
+    if (active) { const r = await api.getInvoices(active.id); setInvoices(r.invoices || []); }
+  };
+
   const sendMessage = async () => {
     if (!msgText.trim() || !active) return;
     const res = await api.sendMessage(active.id, msgText);
@@ -434,23 +440,33 @@ export default function Cabinet() {
                   <div className="space-y-3">
                     {invoices.length === 0 && <p className="text-white/30 text-sm text-center py-6">Счетов пока нет</p>}
                     {invoices.map(inv => (
-                      <div key={inv.id} className="flex items-center justify-between p-4 rounded-xl"
+                      <div key={inv.id} className="p-4 rounded-xl"
                         style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-                        <div>
-                          <div className="font-semibold text-sm">{inv.title}</div>
-                          <div className="text-white/40 text-xs mt-0.5">
-                            {inv.status === 'paid' ? '✅ Оплачен' : inv.status === 'pending' ? '⏳ Ожидает оплаты' : inv.status}
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-semibold text-sm">{inv.title}</div>
+                            <div className="text-xs mt-0.5"
+                              style={{ color: inv.status === 'paid' ? '#4ade80' : inv.status === 'awaiting' ? '#facc15' : 'rgba(255,255,255,0.4)' }}>
+                              {inv.status === 'paid' ? '✅ Оплата получена' : inv.status === 'awaiting' ? '⌛ Проверяем поступление' : '⏳ Ожидает оплаты'}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
+                            {inv.file_url && (
+                              <a href={inv.file_url} target="_blank" rel="noreferrer"
+                                className="text-white/40 hover:text-white/70 transition-colors">
+                                <Icon name="Download" size={15} />
+                              </a>
+                            )}
                           </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
-                          {inv.file_url && (
-                            <a href={inv.file_url} target="_blank" rel="noreferrer"
-                              className="text-white/40 hover:text-white/70 transition-colors">
-                              <Icon name="Download" size={15} />
-                            </a>
-                          )}
-                        </div>
+                        {inv.status === 'pending' && (
+                          <button onClick={() => markPaid(inv.id)}
+                            className="mt-3 w-full py-2 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                            style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>
+                            Я оплатил
+                          </button>
+                        )}
                       </div>
                     ))}
                   </div>

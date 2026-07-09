@@ -294,6 +294,12 @@ export default function Admin() {
     api.notifyInvoice(selectedProject.id, title, amount);
   };
 
+  const confirmPayment = async (invoiceId: number) => {
+    setInvoices(prev => prev.map(i => i.id === invoiceId ? { ...i, status: 'paid' } : i));
+    await api.adminConfirmPayment(invoiceId);
+    if (selectedProject) { const r = await api.getInvoices(selectedProject.id); setInvoices(r.invoices || []); }
+  };
+
   const logout = async () => {
     await api.logout();
     localStorage.removeItem('session_id');
@@ -643,12 +649,24 @@ export default function Admin() {
                         <div className="space-y-2">
                           {invoices.length === 0 && <p className="text-white/30 text-sm text-center py-4">Счетов нет</p>}
                           {invoices.map(inv => (
-                            <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl" style={cardStyle}>
-                              <div>
-                                <div className="font-semibold text-sm">{inv.title}</div>
-                                <div className="text-white/40 text-xs">{inv.status === 'paid' ? '✅ Оплачен' : '⏳ Ожидает'}</div>
+                            <div key={inv.id} className="p-3 rounded-xl" style={cardStyle}>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <div className="font-semibold text-sm">{inv.title}</div>
+                                  <div className="text-xs mt-0.5"
+                                    style={{ color: inv.status === 'paid' ? '#4ade80' : inv.status === 'awaiting' ? '#facc15' : 'rgba(255,255,255,0.4)' }}>
+                                    {inv.status === 'paid' ? '✅ Оплата получена' : inv.status === 'awaiting' ? '⌛ Клиент оплатил — подтвердите' : '⏳ Ожидает оплаты'}
+                                  </div>
+                                </div>
+                                <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
                               </div>
-                              <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
+                              {inv.status === 'awaiting' && (
+                                <button onClick={() => confirmPayment(inv.id)}
+                                  className="mt-2.5 w-full py-2 rounded-lg text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                  style={{ background: 'linear-gradient(135deg, #4ade80, #22c55e)' }}>
+                                  Подтвердить поступление
+                                </button>
+                              )}
                             </div>
                           ))}
                         </div>

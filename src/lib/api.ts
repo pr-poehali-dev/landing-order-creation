@@ -41,6 +41,9 @@ export const api = {
   getInvoices: (projectId: number) =>
     fetch(`${URLS.cabinet}?action=invoices&project_id=${projectId}`, { headers: authHeaders() }).then(r => r.json()),
 
+  markInvoicePaid: (invoiceId: number) =>
+    fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'mark_paid', invoice_id: invoiceId }) }).then(r => r.json()),
+
   adminGetUsers: () =>
     fetch(`${URLS.admin}?action=users`, { headers: authHeaders() }).then(r => r.json()),
 
@@ -67,6 +70,9 @@ export const api = {
 
   adminAddInvoice: (project_id: number, title: string, amount: number, file_url: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'add_invoice', project_id, title, amount, file_url }) }).then(r => r.json()),
+
+  adminConfirmPayment: (invoice_id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'confirm_payment', invoice_id }) }).then(r => r.json()),
 
   adminUploadFile: (project_id: number, file_name: string, file_data: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'upload_file', project_id, file_name, file_data }) }).then(r => r.json()),

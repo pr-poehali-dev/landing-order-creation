@@ -171,6 +171,17 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': inv_id})}
 
+        # confirm_payment — админ подтверждает поступление денег
+        if act == 'confirm_payment':
+            invoice_id = body.get('invoice_id')
+            if not invoice_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'invoice_id обязателен'})}
+            cur.execute("UPDATE invoices SET status = 'paid' WHERE id = %s", (invoice_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
         # delete_user
         if act == 'delete_user':
             uid = body.get('user_id')
