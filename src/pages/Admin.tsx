@@ -469,7 +469,7 @@ export default function Admin() {
                         <button key={t} onClick={() => loadSubTab(t)}
                           className="flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
                           style={{ color: subTab === t ? '#a855f7' : 'rgba(255,255,255,0.4)', borderBottom: subTab === t ? '2px solid #a855f7' : '2px solid transparent' }}>
-                          {t === 'messages' ? 'Переписка' : t === 'files' ? 'Файлы' : 'Счета'}
+                          {t === 'messages' ? 'Чат' : t === 'files' ? 'Файлы' : 'Счета'}
                           {tabUnread && (
                             <span className="text-xs font-bold px-1.5 py-0.5 rounded-full leading-none"
                               style={{ background: '#a855f7', color: 'white' }}>
