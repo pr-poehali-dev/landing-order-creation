@@ -119,7 +119,7 @@ export default function Cabinet() {
         const t = await api.getTyping(active.id);
         setPeerTyping(t.is_typing || false);
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [navigate]);

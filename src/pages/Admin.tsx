@@ -131,7 +131,7 @@ export default function Admin() {
         const t = await api.adminGetTyping(opened.id);
         setPeerTyping(t.is_typing || false);
       }
-    }, 5000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [navigate]);
