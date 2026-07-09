@@ -269,7 +269,10 @@ export default function Admin() {
   };
 
   const createProject = async () => {
-    await api.adminCreateProject(newProject.user_id, newProject.title, newProject.status, newProject.description);
+    if (!newProject.user_id) { alert('Выберите клиента для проекта'); return; }
+    if (!newProject.title.trim()) { alert('Введите название проекта'); return; }
+    const res = await api.adminCreateProject(newProject.user_id, newProject.title.trim(), newProject.status, newProject.description);
+    if (res?.error) { alert(res.error); return; }
     setShowNewProject(false); setNewProject({ user_id: 0, title: '', status: 'new', description: '' });
     loadData();
   };
