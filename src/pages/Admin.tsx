@@ -634,12 +634,37 @@ export default function Admin() {
         {tab === 'chat' && (
           <div className="max-w-2xl">
             <h2 className="font-['Oswald'] font-bold text-xl mb-4">Чат</h2>
-            <div className="rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3" style={{ ...cardStyle, minHeight: 320 }}>
-              <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.15)' }}>
-                <Icon name="MessagesSquare" size={26} style={{ color: '#a855f7' }} />
+            {projects.length === 0 ? (
+              <div className="rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3" style={{ ...cardStyle, minHeight: 240 }}>
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.15)' }}>
+                  <Icon name="MessagesSquare" size={26} style={{ color: '#a855f7' }} />
+                </div>
+                <p className="text-white/60 text-sm max-w-xs">Пока нет проектов для переписки.</p>
               </div>
-              <p className="text-white/60 text-sm max-w-xs">Здесь будет чат с клиентами. Раздел готов к подключению переписки.</p>
-            </div>
+            ) : (
+              <div className="space-y-2">
+                {[...projects].sort((a, b) => (unread[b.id] || 0) - (unread[a.id] || 0)).map(p => (
+                  <button key={p.id} onClick={() => openProject(p)}
+                    className="w-full flex items-center gap-3 p-4 rounded-2xl text-left transition-colors hover:bg-white/[0.03]"
+                    style={cardStyle}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(168,85,247,0.15)' }}>
+                      <Icon name="MessageCircle" size={18} style={{ color: '#a855f7' }} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-sm truncate">{p.title}</div>
+                      <div className="text-white/40 text-xs truncate">{p.client_name}</div>
+                    </div>
+                    {(unread[p.id] || 0) > 0 && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full leading-none shrink-0"
+                        style={{ background: '#a855f7', color: 'white' }}>
+                        {unread[p.id]}
+                      </span>
+                    )}
+                    <Icon name="ChevronRight" size={16} className="text-white/30 shrink-0" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
