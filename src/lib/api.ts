@@ -74,6 +74,9 @@ export const api = {
   adminConfirmPayment: (invoice_id: number) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'confirm_payment', invoice_id }) }).then(r => r.json()),
 
+  adminDeleteInvoice: (invoice_id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_invoice', invoice_id }) }).then(r => r.json()),
+
   adminUploadFile: (project_id: number, file_name: string, file_data: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'upload_file', project_id, file_name, file_data }) }).then(r => r.json()),
 

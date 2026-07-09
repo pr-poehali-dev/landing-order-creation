@@ -317,6 +317,13 @@ export default function Admin() {
     if (selectedProject) { const r = await api.getInvoices(selectedProject.id); setInvoices(r.invoices || []); }
   };
 
+  const deleteInvoice = async (invoiceId: number) => {
+    if (!confirm('Отменить счёт? Он будет удалён у клиента.')) return;
+    setInvoices(prev => prev.filter(i => i.id !== invoiceId));
+    await api.adminDeleteInvoice(invoiceId);
+    if (selectedProject) { const r = await api.getInvoices(selectedProject.id); setInvoices(r.invoices || []); }
+  };
+
   const logout = async () => {
     await api.logout();
     localStorage.removeItem('session_id');
@@ -675,7 +682,13 @@ export default function Admin() {
                                     {inv.status === 'paid' ? '✅ Оплата получена' : inv.status === 'awaiting' ? '⌛ Клиент оплатил — подтвердите' : '⏳ Ожидает оплаты'}
                                   </div>
                                 </div>
-                                <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-bold text-purple-400">{inv.amount.toLocaleString()} ₽</span>
+                                  <button onClick={() => deleteInvoice(inv.id)} title="Отменить счёт"
+                                    className="text-white/30 hover:text-red-400 transition-colors">
+                                    <Icon name="Trash2" size={15} />
+                                  </button>
+                                </div>
                               </div>
                               {inv.status === 'awaiting' && (
                                 <button onClick={() => confirmPayment(inv.id)}

@@ -158,6 +158,17 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
+        # delete_invoice — отменить (удалить) счёт
+        if act == 'delete_invoice':
+            invoice_id = body.get('invoice_id')
+            if not invoice_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'invoice_id обязателен'})}
+            cur.execute("DELETE FROM invoices WHERE id = %s", (invoice_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
         # add_invoice
         if act == 'add_invoice':
             project_id = body.get('project_id')
