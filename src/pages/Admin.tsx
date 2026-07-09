@@ -454,10 +454,14 @@ export default function Admin() {
 
               {showNewProject && (
                 <div className="rounded-2xl p-4 mb-3 space-y-2" style={{ ...cardStyle, border: '1px solid rgba(168,85,247,0.2)' }}>
-                  <select className={inputCls} style={inputStyle} value={newProject.user_id} onChange={e => setNewProject({ ...newProject, user_id: Number(e.target.value) })}>
-                    <option value={0}>Выбрать клиента...</option>
-                    {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                  </select>
+                  {users.length === 0 ? (
+                    <p className="text-xs text-yellow-400/90 py-1">Сначала добавьте клиента во вкладке «Клиенты»</p>
+                  ) : (
+                    <select className={inputCls} style={inputStyle} value={newProject.user_id} onChange={e => setNewProject({ ...newProject, user_id: Number(e.target.value) })}>
+                      <option value={0}>Выбрать клиента...</option>
+                      {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                    </select>
+                  )}
                   <input className={inputCls} style={inputStyle} placeholder="Название проекта" value={newProject.title} onChange={e => setNewProject({ ...newProject, title: e.target.value })} />
                   <select className={inputCls} style={inputStyle} value={newProject.status} onChange={e => setNewProject({ ...newProject, status: e.target.value })}>
                     {STATUS_OPTIONS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
