@@ -73,8 +73,20 @@ export default function Admin() {
 
   useEffect(() => {
     const total = Object.values(unread).reduce((s, n) => s + n, 0);
-    document.title = total > 0 ? `(${total}) Админ — LandingGuru` : 'Админ — LandingGuru';
-    return () => { document.title = 'LandingGuru'; };
+    const base = 'Админ — LandingGuru';
+    if (total === 0) {
+      document.title = base;
+      return () => { document.title = 'LandingGuru'; };
+    }
+    let flip = false;
+    const flash = `💬 ${total} ${total === 1 ? 'новое сообщение' : 'новых сообщений'}`;
+    const counter = `(${total}) ${base}`;
+    document.title = flash;
+    const blink = setInterval(() => {
+      flip = !flip;
+      document.title = flip ? counter : flash;
+    }, 1000);
+    return () => { clearInterval(blink); document.title = 'LandingGuru'; };
   }, [unread]);
 
   useEffect(() => {
