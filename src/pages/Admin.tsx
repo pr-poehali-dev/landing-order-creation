@@ -93,7 +93,8 @@ export default function Admin() {
       Notification.requestPermission();
     }
 
-    const interval = setInterval(async () => {
+    const poll = async () => {
+      if (document.visibilityState === 'hidden') return;
       const res = await api.adminGetUnread();
       const counts: Record<string, number> = res.counts || {};
       let blink = false;
@@ -131,9 +132,13 @@ export default function Admin() {
         const t = await api.adminGetTyping(opened.id);
         setPeerTyping(t.is_typing || false);
       }
-    }, 10000);
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(poll, 10000);
+    const onVisible = () => { if (document.visibilityState === 'visible') poll(); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); };
   }, [navigate]);
 
   const loadData = async () => {

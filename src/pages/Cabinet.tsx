@@ -90,7 +90,8 @@ export default function Cabinet() {
       Notification.requestPermission();
     }
 
-    const interval = setInterval(async () => {
+    const poll = async () => {
+      if (document.visibilityState === 'hidden') return;
       const res = await api.getUnread();
       const counts: Record<string, number> = res.counts || {};
       const active = activeRef.current;
@@ -119,9 +120,13 @@ export default function Cabinet() {
         const t = await api.getTyping(active.id);
         setPeerTyping(t.is_typing || false);
       }
-    }, 10000);
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(poll, 10000);
+    const onVisible = () => { if (document.visibilityState === 'visible') poll(); };
+    document.addEventListener('visibilitychange', onVisible);
+
+    return () => { clearInterval(interval); document.removeEventListener('visibilitychange', onVisible); };
   }, [navigate]);
 
   const openProject = async (p: Project) => {
