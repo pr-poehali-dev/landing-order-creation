@@ -84,9 +84,11 @@ def handler(event: dict, context) -> dict:
             GROUP BY m.project_id
         """)
         rows = cur.fetchall()
-        conn.close()
         counts = {str(r[0]): r[1] for r in rows}
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'counts': counts})}
+        cur.execute("SELECT id FROM invoices WHERE status = 'awaiting' ORDER BY id")
+        awaiting = [r[0] for r in cur.fetchall()]
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'counts': counts, 'awaiting_payments': awaiting})}
 
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')

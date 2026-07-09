@@ -53,6 +53,7 @@ export default function Admin() {
   const [peerTyping, setPeerTyping] = useState(false);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
+  const awaitingPayRef = useRef<number[] | null>(null);
   const selectedProjectRef = useRef<Project | null>(null);
   const projectsRef = useRef<Project[]>([]);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
@@ -120,6 +121,22 @@ export default function Admin() {
         }
         lastMsgCountRef.current[proj.id] = total;
       }
+      // Новые заявки об оплате (клиент нажал «Я оплатил»)
+      const awaiting: number[] = res.awaiting_payments || [];
+      if (awaitingPayRef.current !== null) {
+        const fresh = awaiting.filter(id => !awaitingPayRef.current!.includes(id));
+        if (fresh.length > 0) {
+          blink = true;
+          if (opened) { const r = await api.getInvoices(opened.id); setInvoices(r.invoices || []); }
+          if (Notification.permission === 'granted') {
+            new Notification('💰 Клиент сообщил об оплате', {
+              body: 'Подтвердите поступление денег во вкладке «Счета»',
+              icon: '/favicon.ico',
+            });
+          }
+        }
+      }
+      awaitingPayRef.current = awaiting;
       if (blink) {
         if (soundOnRef.current) playNotification();
         setChatBlink(false);
