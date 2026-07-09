@@ -2,22 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '@/lib/api';
 import { setFavicon } from '@/lib/favicon';
+import { playNotification } from '@/lib/notification';
 import Icon from '@/components/ui/icon';
-
-function playNotification() {
-  const ctx = new (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext)();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(660, ctx.currentTime);
-  osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-  gain.gain.setValueAtTime(0.3, ctx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-  osc.start(ctx.currentTime);
-  osc.stop(ctx.currentTime + 0.4);
-}
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   new: { label: 'Новый', color: '#a855f7' },
@@ -101,7 +87,7 @@ export default function Cabinet() {
         const adminMsgs = msgs.filter(m => m.is_admin);
         const prev = lastMsgCountRef.current[proj.id] ?? adminMsgs.length;
         if (adminMsgs.length > prev) {
-          playNotification();
+          playNotification(660, 880);
           if (Notification.permission === 'granted') {
             new Notification(`💬 Новое сообщение — ${proj.title}`, {
               body: adminMsgs[adminMsgs.length - 1]?.text || 'Команда написала вам',
