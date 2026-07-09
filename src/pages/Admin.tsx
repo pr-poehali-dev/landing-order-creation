@@ -54,6 +54,7 @@ export default function Admin() {
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const selectedProjectRef = useRef<Project | null>(null);
+  const projectsRef = useRef<Project[]>([]);
   const messagesRef = useRef<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
   const openProjectRef = useRef<((p: Project, msgs?: {id:number;text:string;author:string;is_admin:boolean}[]) => void) | null>(null);
   const subTabRef = useRef<string>('messages');
@@ -61,6 +62,7 @@ export default function Admin() {
   useEffect(() => { selectedProjectRef.current = selectedProject; }, [selectedProject]);
   useEffect(() => { subTabRef.current = subTab; }, [subTab]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
+  useEffect(() => { projectsRef.current = projects; }, [projects]);
 
   useEffect(() => {
     const total = Object.values(unread).reduce((s, n) => s + n, 0);
@@ -92,41 +94,41 @@ export default function Admin() {
     }
 
     const interval = setInterval(async () => {
-      const p = await api.adminGetProjects();
-      const allProjects: Project[] = p.projects || [];
-      for (const proj of allProjects) {
-        const r = await api.getMessages(proj.id);
-        const msgs: {id:number;is_admin:boolean;text:string;author:string}[] = r.messages || [];
-        const clientMsgs = msgs.filter(m => !m.is_admin);
-        const prev = lastMsgCountRef.current[proj.id] ?? clientMsgs.length;
-        if (clientMsgs.length > prev) {
-          if (soundOnRef.current) playNotification();
-          setChatBlink(false);
-          requestAnimationFrame(() => setChatBlink(true));
-          if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
-          blinkTimeoutRef.current = setTimeout(() => setChatBlink(false), 1500);
-          const lastMsg = clientMsgs[clientMsgs.length - 1];
-          if (Notification.permission === 'granted') {
-            const notif = new Notification(`💬 ${proj.client_name} — ${proj.title}`, {
-              body: lastMsg?.text || 'Новое сообщение',
-              icon: '/favicon.ico',
-            });
-            notif.onclick = () => {
-              window.focus();
-              openProjectRef.current?.(proj, r.messages || []);
-            };
-          }
-          if (selectedProjectRef.current?.id === proj.id && subTabRef.current === 'messages') {
+      const res = await api.adminGetUnread();
+      const counts: Record<string, number> = res.counts || {};
+      let blink = false;
+      const opened = selectedProjectRef.current;
+      for (const proj of projectsRef.current) {
+        const total = counts[String(proj.id)] ?? 0;
+        const prev = lastMsgCountRef.current[proj.id] ?? total;
+        if (total > prev) {
+          blink = true;
+          if (opened?.id === proj.id && subTabRef.current === 'messages') {
+            const r = await api.getMessages(proj.id);
             setMessages(r.messages || []);
           } else {
-            setUnread(prev => ({ ...prev, [proj.id]: (prev[proj.id] || 0) + (clientMsgs.length - (lastMsgCountRef.current[proj.id] ?? clientMsgs.length)) }));
+            setUnread(u => ({ ...u, [proj.id]: (u[proj.id] || 0) + (total - prev) }));
+            if (Notification.permission === 'granted') {
+              const notif = new Notification(`💬 ${proj.client_name} — ${proj.title}`, {
+                body: 'Новое сообщение',
+                icon: '/favicon.ico',
+              });
+              notif.onclick = () => { window.focus(); openProjectRef.current?.(proj); };
+            }
           }
         }
-        lastMsgCountRef.current[proj.id] = clientMsgs.length;
+        lastMsgCountRef.current[proj.id] = total;
       }
-      // Проверяем typing для открытого проекта
-      if (selectedProjectRef.current && subTabRef.current === 'messages') {
-        const t = await api.adminGetTyping(selectedProjectRef.current.id);
+      if (blink) {
+        if (soundOnRef.current) playNotification();
+        setChatBlink(false);
+        requestAnimationFrame(() => setChatBlink(true));
+        if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
+        blinkTimeoutRef.current = setTimeout(() => setChatBlink(false), 1500);
+      }
+      // Проверяем typing только для открытого проекта
+      if (opened && subTabRef.current === 'messages') {
+        const t = await api.adminGetTyping(opened.id);
         setPeerTyping(t.is_typing || false);
       }
     }, 5000);
@@ -139,12 +141,12 @@ export default function Admin() {
     setUsers(u.users || []);
     const projs: Project[] = p.projects || [];
     setProjects(projs);
-    // Инициализируем baseline счётчиков сразу при загрузке
+    // Инициализируем baseline счётчиков одним запросом
+    const res = await api.adminGetUnread();
+    const counts: Record<string, number> = res.counts || {};
     for (const proj of projs) {
       if (lastMsgCountRef.current[proj.id] === undefined) {
-        const r = await api.getMessages(proj.id);
-        const msgs = r.messages || [];
-        lastMsgCountRef.current[proj.id] = msgs.filter((m: {is_admin: boolean}) => !m.is_admin).length;
+        lastMsgCountRef.current[proj.id] = counts[String(proj.id)] ?? 0;
       }
     }
   };

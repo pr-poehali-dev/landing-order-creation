@@ -29,6 +29,7 @@ export default function Cabinet() {
   const [msgText, setMsgText] = useState('');
   const [loading, setLoading] = useState(true);
   const activeRef = useRef<Project | null>(null);
+  const projectsRef = useRef<Project[]>([]);
   const lastMsgCountRef = useRef<Record<number, number>>({});
   const [unread, setUnread] = useState<Record<number, number>>({});
   const [soundOn, setSoundOn] = useState(() => localStorage.getItem('sound_off') !== '1');
@@ -44,6 +45,7 @@ export default function Cabinet() {
   }, [showSoundHint]);
 
   useEffect(() => { activeRef.current = active; }, [active]);
+  useEffect(() => { projectsRef.current = projects; }, [projects]);
 
   useEffect(() => {
     const total = Object.values(unread).reduce((s, n) => s + n, 0);
@@ -74,12 +76,12 @@ export default function Cabinet() {
       const projs: Project[] = res.projects || [];
       setProjects(projs);
       setLoading(false);
-      // Инициализируем baseline счётчиков сразу при загрузке
+      // Инициализируем baseline счётчиков одним запросом
+      const u = await api.getUnread();
+      const counts: Record<string, number> = u.counts || {};
       for (const proj of projs) {
         if (lastMsgCountRef.current[proj.id] === undefined) {
-          const r = await api.getMessages(proj.id);
-          const msgs: Message[] = r.messages || [];
-          lastMsgCountRef.current[proj.id] = msgs.filter(m => m.is_admin).length;
+          lastMsgCountRef.current[proj.id] = counts[String(proj.id)] ?? 0;
         }
       }
     });
@@ -89,36 +91,32 @@ export default function Cabinet() {
     }
 
     const interval = setInterval(async () => {
-      const res = await api.getProjects();
-      const allProjects: Project[] = res.projects || [];
-      setProjects(allProjects);
-      for (const proj of allProjects) {
-        const r = await api.getMessages(proj.id);
-        const msgs: Message[] = r.messages || [];
-        const adminMsgs = msgs.filter(m => m.is_admin);
-        const prev = lastMsgCountRef.current[proj.id] ?? adminMsgs.length;
-        if (adminMsgs.length > prev) {
+      const res = await api.getUnread();
+      const counts: Record<string, number> = res.counts || {};
+      const active = activeRef.current;
+      for (const proj of projectsRef.current) {
+        const total = counts[String(proj.id)] ?? 0;
+        const prev = lastMsgCountRef.current[proj.id] ?? total;
+        if (total > prev) {
           if (soundOnRef.current) playNotification(660, 880);
           if (Notification.permission === 'granted') {
             new Notification(`💬 Новое сообщение — ${proj.title}`, {
-              body: adminMsgs[adminMsgs.length - 1]?.text || 'Команда написала вам',
+              body: 'Команда написала вам',
               icon: '/favicon.ico',
             });
           }
-          if (activeRef.current?.id === proj.id) {
-            setMessages(msgs);
+          if (active?.id === proj.id) {
+            const r = await api.getMessages(proj.id);
+            setMessages(r.messages || []);
           } else {
-            setUnread(prev => ({ ...prev, [proj.id]: (prev[proj.id] || 0) + (adminMsgs.length - (lastMsgCountRef.current[proj.id] ?? adminMsgs.length)) }));
+            setUnread(u => ({ ...u, [proj.id]: (u[proj.id] || 0) + (total - prev) }));
           }
-        } else if (activeRef.current?.id === proj.id) {
-          setMessages(msgs);
-          // убираем лишний else
         }
-        lastMsgCountRef.current[proj.id] = adminMsgs.length;
+        lastMsgCountRef.current[proj.id] = total;
       }
       // Проверяем typing для открытого проекта
-      if (activeRef.current) {
-        const t = await api.getTyping(activeRef.current.id);
+      if (active) {
+        const t = await api.getTyping(active.id);
         setPeerTyping(t.is_typing || false);
       }
     }, 5000);

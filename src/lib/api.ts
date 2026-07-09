@@ -26,6 +26,9 @@ export const api = {
   getProjects: () =>
     fetch(`${URLS.cabinet}?action=projects`, { headers: authHeaders() }).then(r => r.json()),
 
+  getUnread: () =>
+    fetch(`${URLS.cabinet}?action=unread`, { headers: authHeaders() }).then(r => r.json()),
+
   getFiles: (projectId: number) =>
     fetch(`${URLS.cabinet}?action=files&project_id=${projectId}`, { headers: authHeaders() }).then(r => r.json()),
 
@@ -43,6 +46,9 @@ export const api = {
 
   adminGetProjects: () =>
     fetch(`${URLS.admin}?action=projects`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminGetUnread: () =>
+    fetch(`${URLS.admin}?action=unread`, { headers: authHeaders() }).then(r => r.json()),
 
   adminCreateUser: (name: string, email: string, password: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'create_user', name, email, password }) }).then(r => r.json()),

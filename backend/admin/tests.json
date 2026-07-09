@@ -11,6 +11,12 @@
       "method": "GET",
       "path": "/?action=users",
       "expectedStatus": 403
+    },
+    {
+      "name": "Unread without auth",
+      "method": "GET",
+      "path": "/?action=unread",
+      "expectedStatus": 403
     }
   ]
 }

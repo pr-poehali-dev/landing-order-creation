@@ -88,6 +88,21 @@ def handler(event: dict, context) -> dict:
         msgs = [{'id': r[0], 'text': r[1], 'created_at': json_serial(r[2]), 'author': r[3], 'is_admin': r[4]} for r in rows]
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'messages': msgs})}
 
+    # GET ?action=unread — число сообщений от команды по проектам пользователя одним запросом
+    if method == 'GET' and action == 'unread':
+        cur.execute("""
+            SELECT m.project_id, COUNT(*)
+            FROM messages m
+            JOIN users u ON m.author_id = u.id
+            JOIN projects p ON m.project_id = p.id
+            WHERE u.is_admin = TRUE AND p.user_id = %s
+            GROUP BY m.project_id
+        """, (user_id,))
+        rows = cur.fetchall()
+        conn.close()
+        counts = {str(r[0]): r[1] for r in rows}
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'counts': counts})}
+
     # POST action=send_message
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
