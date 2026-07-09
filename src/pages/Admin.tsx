@@ -54,6 +54,8 @@ export default function Admin() {
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editUser, setEditUser] = useState({ name: '', email: '', password: '' });
   const [unread, setUnread] = useState<Record<number, number>>({});
+  const [chatBlink, setChatBlink] = useState(false);
+  const blinkTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
@@ -95,6 +97,10 @@ export default function Admin() {
         const prev = lastMsgCountRef.current[proj.id] ?? clientMsgs.length;
         if (clientMsgs.length > prev) {
           playNotification();
+          setChatBlink(false);
+          requestAnimationFrame(() => setChatBlink(true));
+          if (blinkTimeoutRef.current) clearTimeout(blinkTimeoutRef.current);
+          blinkTimeoutRef.current = setTimeout(() => setChatBlink(false), 1500);
           const lastMsg = clientMsgs[clientMsgs.length - 1];
           if (Notification.permission === 'granted') {
             const notif = new Notification(`💬 ${proj.client_name} — ${proj.title}`, {
@@ -304,15 +310,22 @@ export default function Admin() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        <style>{`@keyframes chatBlink{0%,100%{background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);border-color:rgba(255,255,255,0.08)}50%{background:rgba(74,222,128,0.25);color:#4ade80;border-color:rgba(74,222,128,0.5)}}.chat-blink{animation:chatBlink 0.5s ease-in-out 3}`}</style>
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          {(['projects', 'users', 'chat'] as const).map(t => (
+          {(['projects', 'users', 'chat'] as const).map(t => {
+            const totalUnread = Object.values(unread).reduce((s, n) => s + n, 0);
+            return (
             <button key={t} onClick={() => setTab(t)}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${t === 'chat' && chatBlink && tab !== 'chat' ? 'chat-blink' : ''}`}
               style={tab === t ? { background: 'rgba(168,85,247,0.2)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)' } : { ...cardStyle, color: 'rgba(255,255,255,0.4)' }}>
               {t === 'projects' ? 'Проекты' : t === 'users' ? 'Клиенты' : 'Чат'}
+              {t === 'chat' && totalUnread > 0 && (
+                <span className="text-xs font-bold px-1.5 py-0.5 rounded-full leading-none" style={{ background: '#a855f7', color: 'white' }}>{totalUnread}</span>
+              )}
             </button>
-          ))}
+            );
+          })}
         </div>
 
         {tab === 'users' && (
