@@ -34,7 +34,7 @@ type Project = { id: number; user_id: number; title: string; status: string; des
 
 export default function Admin() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<'projects' | 'users'>('projects');
+  const [tab, setTab] = useState<'projects' | 'users' | 'chat'>('projects');
   const [users, setUsers] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -306,11 +306,11 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          {(['projects', 'users'] as const).map(t => (
+          {(['projects', 'users', 'chat'] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className="px-5 py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={tab === t ? { background: 'rgba(168,85,247,0.2)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)' } : { ...cardStyle, color: 'rgba(255,255,255,0.4)' }}>
-              {t === 'projects' ? 'Проекты' : 'Клиенты'}
+              {t === 'projects' ? 'Проекты' : t === 'users' ? 'Клиенты' : 'Чат'}
             </button>
           ))}
         </div>
@@ -627,6 +627,18 @@ export default function Admin() {
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {tab === 'chat' && (
+          <div className="max-w-2xl">
+            <h2 className="font-['Oswald'] font-bold text-xl mb-4">Чат</h2>
+            <div className="rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-3" style={{ ...cardStyle, minHeight: 320 }}>
+              <div className="w-14 h-14 rounded-2xl flex items-center justify-center" style={{ background: 'rgba(168,85,247,0.15)' }}>
+                <Icon name="MessagesSquare" size={26} style={{ color: '#a855f7' }} />
+              </div>
+              <p className="text-white/60 text-sm max-w-xs">Здесь будет чат с клиентами. Раздел готов к подключению переписки.</p>
             </div>
           </div>
         )}
