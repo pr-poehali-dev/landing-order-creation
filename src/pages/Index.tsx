@@ -843,11 +843,19 @@ export default function Index({ city }: { city?: City }) {
       </footer>
 
       {!showCallback && (
-        <button onClick={openCallback} title="Заказать звонок"
-          className="btn-glow fixed right-4 sm:right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
+        <div className="fixed right-4 sm:right-6 z-40 flex flex-col gap-3 transition-all"
           style={{ bottom: showCookie ? "5.5rem" : "1.5rem" }}>
-          <Icon name="Phone" size={22} className="text-white" />
-        </button>
+          <a href="https://max.ru/u/f9LHodD0cOJj06yh1kTJ06sB4PTK6zLsmxRFbaKaoh59HuGHA39Igk6McCc"
+            target="_blank" rel="noopener noreferrer" title="Написать в MAX"
+            className="w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
+            style={{ background: "linear-gradient(135deg,#2a7cff,#0a5cff)" }}>
+            <Icon name="MessageCircle" size={22} className="text-white" />
+          </a>
+          <button onClick={openCallback} title="Заказать звонок"
+            className="btn-glow w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110">
+            <Icon name="Phone" size={22} className="text-white" />
+          </button>
+        </div>
       )}
 
       {showCookie && (
