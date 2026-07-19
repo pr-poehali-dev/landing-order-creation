@@ -435,6 +435,7 @@ export default function Index({ city }: { city?: City }) {
           <a href="#portfolio" className="hover:text-white transition-colors">Портфолио</a>
           <a href="#process" className="hover:text-white transition-colors">Процесс</a>
           <a href="#reviews" className="hover:text-white transition-colors">Отзывы</a>
+          <a href="/blog" className="hover:text-white transition-colors">Блог</a>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <a href="/login"
@@ -890,6 +891,7 @@ export default function Index({ city }: { city?: City }) {
             <a href="#portfolio" className="hover:text-white transition-colors">Портфолио</a>
             <a href="#process" className="hover:text-white transition-colors">Процесс</a>
             <a href="#reviews" className="hover:text-white transition-colors">Отзывы</a>
+            <a href="/blog" className="hover:text-white transition-colors">Блог</a>
             <a href="#order" className="hover:text-white transition-colors">Заказать</a>
             <a href="/login" className="hover:text-white transition-colors">Личный кабинет</a>
           </nav>

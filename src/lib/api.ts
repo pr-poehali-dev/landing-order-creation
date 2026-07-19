@@ -166,4 +166,16 @@ export const api = {
 
   adminUploadImage: (file_name: string, file_data: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'upload_image', file_name, file_data }) }).then(r => r.json()),
+
+  getArticle: (slug: string) =>
+    fetch(`${URLS.admin}?action=article&slug=${encodeURIComponent(slug)}`).then(r => r.json()),
+
+  adminGetArticles: () =>
+    fetch(`${URLS.admin}?action=articles`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminSaveArticle: (article: { id?: number; slug?: string; title: string; excerpt: string; content: string; cover_url: string; published: boolean }) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_article', ...article }) }).then(r => r.json()),
+
+  adminDeleteArticle: (id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_article', id }) }).then(r => r.json()),
 };

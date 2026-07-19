@@ -61,6 +61,10 @@ export default function Admin() {
   const [editingPortfolio, setEditingPortfolio] = useState<null | { id?: number; title: string; category: string; image_url: string; color: string; active: boolean; sort_order: number }>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const portfolioImgRef = useRef<HTMLInputElement>(null);
+  const [articles, setArticles] = useState<{ id: number; slug: string; title: string; excerpt: string; content: string; cover_url: string; published: boolean }[]>([]);
+  const [editingArticle, setEditingArticle] = useState<null | { id?: number; slug?: string; title: string; excerpt: string; content: string; cover_url: string; published: boolean }>(null);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const coverImgRef = useRef<HTMLInputElement>(null);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
   const [peerTyping, setPeerTyping] = useState(false);
@@ -271,11 +275,12 @@ export default function Admin() {
   };
 
   const loadSections = async () => {
-    const [s, p, rv, pf] = await Promise.all([api.adminGetSections(), api.adminGetPromos(), api.adminGetReviews(), api.adminGetPortfolio()]);
+    const [s, p, rv, pf, ar] = await Promise.all([api.adminGetSections(), api.adminGetPromos(), api.adminGetReviews(), api.adminGetPortfolio(), api.adminGetArticles()]);
     if (s.sections) setSections(s.sections);
     if (p.promos) setPromos(p.promos);
     if (rv.reviews) setReviews(rv.reviews);
     if (pf.portfolio) setPortfolio(pf.portfolio);
+    if (ar.articles) setArticles(ar.articles);
   };
 
   const toggleSection = async (key: string, enabled: boolean) => {
@@ -339,6 +344,35 @@ export default function Admin() {
   const deletePortfolio = async (id: number) => {
     if (!confirm('Удалить работу?')) return;
     await api.adminDeletePortfolio(id);
+    loadSections();
+  };
+
+  const emptyArticle = { title: '', excerpt: '', content: '', cover_url: '', published: true };
+
+  const uploadCoverImage = async (file: File) => {
+    if (!editingArticle) return;
+    setUploadingCover(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const b64 = String(reader.result).split(',')[1];
+      const res = await api.adminUploadImage(file.name, b64);
+      if (res.url) setEditingArticle(prev => prev ? { ...prev, cover_url: res.url } : prev);
+      setUploadingCover(false);
+    };
+    reader.onerror = () => setUploadingCover(false);
+    reader.readAsDataURL(file);
+  };
+
+  const saveArticle = async () => {
+    if (!editingArticle || !editingArticle.title.trim()) return;
+    await api.adminSaveArticle(editingArticle);
+    setEditingArticle(null);
+    loadSections();
+  };
+
+  const deleteArticle = async (id: number) => {
+    if (!confirm('Удалить статью?')) return;
+    await api.adminDeleteArticle(id);
     loadSections();
   };
 
@@ -635,6 +669,75 @@ export default function Admin() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-['Oswald'] font-bold text-xl">Статьи (Блог)</h2>
+                <button onClick={() => setEditingArticle({ ...emptyArticle })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                  style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.25)' }}>
+                  <Icon name="Plus" size={15} /> Добавить статью
+                </button>
+              </div>
+              {articles.length === 0 && <p className="text-white/40 text-sm">Пока нет ни одной статьи. Добавьте первую.</p>}
+              <div className="space-y-2">
+                {articles.map(a => (
+                  <div key={a.id} className="flex items-center justify-between gap-3 p-3 rounded-xl" style={cardStyle}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-16 h-12 rounded-lg bg-white/5 overflow-hidden shrink-0 flex items-center justify-center">
+                        {a.cover_url ? <img src={a.cover_url} alt="" className="w-full h-full object-cover" /> : <Icon name="Newspaper" size={18} className="text-white/20" />}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm truncate">{a.title}</span>
+                          {!a.published && <span className="text-xs text-white/30">(черновик)</span>}
+                        </div>
+                        <div className="text-white/30 text-xs truncate">/blog/{a.slug}</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <a href={`/blog/${a.slug}`} target="_blank" rel="noopener noreferrer"
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-colors"><Icon name="ExternalLink" size={15} /></a>
+                      <button onClick={() => setEditingArticle({ id: a.id, slug: a.slug, title: a.title, excerpt: a.excerpt, content: a.content, cover_url: a.cover_url, published: a.published })}
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-colors"><Icon name="Pencil" size={15} /></button>
+                      <button onClick={() => deleteArticle(a.id)}
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-red-400 transition-colors"><Icon name="Trash2" size={15} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingArticle && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingArticle(null)}>
+            <div className="w-full max-w-lg rounded-2xl p-6 max-h-[90vh] overflow-y-auto" style={{ background: '#12121c', border: '1px solid rgba(168,85,247,0.3)' }} onClick={e => e.stopPropagation()}>
+              <h3 className="font-['Oswald'] font-bold text-xl mb-4">{editingArticle.id ? 'Редактировать статью' : 'Новая статья'}</h3>
+              <div className="space-y-3">
+                <div onClick={() => coverImgRef.current?.click()}
+                  className="aspect-[16/9] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer relative"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)' }}>
+                  {editingArticle.cover_url
+                    ? <img src={editingArticle.cover_url} alt="" className="w-full h-full object-cover" />
+                    : <div className="text-center text-white/40 text-sm"><Icon name="ImagePlus" size={28} className="mx-auto mb-1" />Загрузить обложку</div>}
+                  {uploadingCover && <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-sm">Загрузка…</div>}
+                </div>
+                <input ref={coverImgRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadCoverImage(f); e.target.value = ''; }} />
+                <input value={editingArticle.title} onChange={e => setEditingArticle({ ...editingArticle, title: e.target.value })} placeholder="Заголовок статьи *" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <textarea value={editingArticle.excerpt} onChange={e => setEditingArticle({ ...editingArticle, excerpt: e.target.value })} placeholder="Краткое описание (для карточки и SEO)" rows={2} className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm resize-none" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <textarea value={editingArticle.content} onChange={e => setEditingArticle({ ...editingArticle, content: e.target.value })} placeholder="Текст статьи. Переносы строк сохраняются." rows={10} className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm resize-none" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+                  <input type="checkbox" checked={editingArticle.published} onChange={e => setEditingArticle({ ...editingArticle, published: e.target.checked })} />
+                  Опубликовать (показывать на сайте)
+                </label>
+              </div>
+              <div className="flex gap-2 mt-5">
+                <button onClick={() => setEditingArticle(null)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white/60" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>Отмена</button>
+                <button onClick={saveArticle} disabled={uploadingCover} className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>Сохранить</button>
               </div>
             </div>
           </div>

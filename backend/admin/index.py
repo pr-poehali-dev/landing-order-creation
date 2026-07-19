@@ -17,6 +17,46 @@ def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
 
+TRANSLIT = {
+    'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'e',
+    'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
+    'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u',
+    'ф': 'f', 'х': 'h', 'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '',
+    'ы': 'y', 'ь': '', 'э': 'e', 'ю': 'yu', 'я': 'ya',
+}
+
+
+def slugify(text: str) -> str:
+    text = (text or '').strip().lower()
+    out = []
+    for ch in text:
+        if ch in TRANSLIT:
+            out.append(TRANSLIT[ch])
+        elif ch.isalnum():
+            out.append(ch)
+        elif ch in (' ', '-', '_'):
+            out.append('-')
+    slug = ''.join(out)
+    while '--' in slug:
+        slug = slug.replace('--', '-')
+    slug = slug.strip('-')
+    return slug or 'article'
+
+
+def unique_slug(cur, base: str, exclude_id=None) -> str:
+    slug = base
+    i = 2
+    while True:
+        if exclude_id:
+            cur.execute("SELECT id FROM articles WHERE slug = %s AND id != %s", (slug, exclude_id))
+        else:
+            cur.execute("SELECT id FROM articles WHERE slug = %s", (slug,))
+        if not cur.fetchone():
+            return slug
+        slug = f"{base}-{i}"
+        i += 1
+
+
 def get_admin(cur, session_id):
     cur.execute("""
         SELECT u.id, u.is_admin
@@ -76,8 +116,29 @@ def handler(event: dict, context) -> dict:
                 FROM portfolio WHERE active = TRUE ORDER BY sort_order ASC, id ASC
             """)
             portfolio = [{'id': r[0], 'title': r[1], 'category': r[2], 'img': r[3], 'color': r[4]} for r in cur.fetchall()]
+        articles = []
+        if sections.get('blog'):
+            cur.execute("""
+                SELECT id, slug, title, excerpt, cover_url, created_at
+                FROM articles WHERE published = TRUE ORDER BY created_at DESC, id DESC
+            """)
+            articles = [{'id': r[0], 'slug': r[1], 'title': r[2], 'excerpt': r[3], 'cover_url': r[4], 'created_at': json_serial(r[5])} for r in cur.fetchall()]
         conn.close()
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos, 'reviews': reviews, 'portfolio': portfolio})}
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos, 'reviews': reviews, 'portfolio': portfolio, 'articles': articles})}
+
+    # ПУБЛИЧНО: одна статья по slug
+    if method == 'GET' and action == 'article':
+        slug = params.get('slug', '')
+        cur.execute("""
+            SELECT id, slug, title, excerpt, content, cover_url, created_at
+            FROM articles WHERE slug = %s AND published = TRUE
+        """, (slug,))
+        row = cur.fetchone()
+        conn.close()
+        if not row:
+            return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'not found'})}
+        article = {'id': row[0], 'slug': row[1], 'title': row[2], 'excerpt': row[3], 'content': row[4], 'cover_url': row[5], 'created_at': json_serial(row[6])}
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'article': article})}
 
     admin = get_admin(cur, session_id)
 
@@ -159,6 +220,17 @@ def handler(event: dict, context) -> dict:
         conn.close()
         items = [{'id': r[0], 'title': r[1], 'category': r[2], 'image_url': r[3], 'color': r[4], 'active': r[5], 'sort_order': r[6]} for r in rows]
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'portfolio': items})}
+
+    # GET ?action=articles — все статьи (для админки)
+    if method == 'GET' and action == 'articles':
+        cur.execute("""
+            SELECT id, slug, title, excerpt, content, cover_url, published, created_at
+            FROM articles ORDER BY created_at DESC, id DESC
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        items = [{'id': r[0], 'slug': r[1], 'title': r[2], 'excerpt': r[3], 'content': r[4], 'cover_url': r[5], 'published': r[6], 'created_at': json_serial(r[7])} for r in rows]
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'articles': items})}
 
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
@@ -535,6 +607,46 @@ def handler(event: dict, context) -> dict:
                 conn.close()
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
             cur.execute("DELETE FROM portfolio WHERE id = %s", (item_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # save_article — создать или обновить статью
+        if act == 'save_article':
+            art_id = body.get('id')
+            title = body.get('title', '').strip()
+            excerpt = body.get('excerpt', '').strip()
+            content = body.get('content', '').strip()
+            cover_url = body.get('cover_url', '').strip()
+            published = bool(body.get('published', True))
+            if not title:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Заголовок обязателен'})}
+            base_slug = slugify(body.get('slug', '').strip() or title)
+            if art_id:
+                slug = unique_slug(cur, base_slug, exclude_id=art_id)
+                cur.execute("""
+                    UPDATE articles SET slug=%s, title=%s, excerpt=%s, content=%s, cover_url=%s, published=%s, updated_at=NOW()
+                    WHERE id=%s
+                """, (slug, title, excerpt, content, cover_url, published, art_id))
+            else:
+                slug = unique_slug(cur, base_slug)
+                cur.execute("""
+                    INSERT INTO articles (slug, title, excerpt, content, cover_url, published)
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                """, (slug, title, excerpt, content, cover_url, published))
+                art_id = cur.fetchone()[0]
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': art_id, 'slug': slug})}
+
+        # delete_article — удалить статью
+        if act == 'delete_article':
+            art_id = body.get('id')
+            if not art_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
+            cur.execute("DELETE FROM articles WHERE id = %s", (art_id,))
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}

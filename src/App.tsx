@@ -9,6 +9,8 @@ import Login from "./pages/Login";
 import Cabinet from "./pages/Cabinet";
 import Admin from "./pages/Admin";
 import CityLanding from "./pages/CityLanding";
+import Blog from "./pages/Blog";
+import Article from "./pages/Article";
 import NotFoundRedirect from "./pages/NotFoundRedirect";
 
 const queryClient = new QueryClient();
@@ -26,6 +28,8 @@ const App = () => (
           <Route path="/admin" element={<Admin />} />
           <Route path="/landing/:citySlug" element={<CityLanding />} />
           <Route path="/landing-:citySlug" element={<CityLanding />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/blog/:slug" element={<Article />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFoundRedirect />} />
         </Routes>
