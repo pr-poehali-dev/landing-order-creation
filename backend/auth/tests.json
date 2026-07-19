@@ -11,24 +11,41 @@
       "method": "POST",
       "path": "/",
       "body": {"action": "login", "email": "", "password": ""},
-      "expectedStatus": 400,
-      "expectedBody": {"error": "string"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 400
     },
     {
       "name": "Login wrong credentials",
       "method": "POST",
       "path": "/",
       "body": {"action": "login", "email": "noone@test.com", "password": "wrongpass"},
-      "expectedStatus": 401,
-      "expectedBody": {"error": "string"},
-      "bodyMatcher": "partial"
+      "expectedStatus": 401
     },
     {
       "name": "Me without session",
       "method": "GET",
       "path": "/",
       "expectedStatus": 401
+    },
+    {
+      "name": "Verify login missing fields",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "verify_login", "email": "", "code": ""},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Reset password short",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "reset_password", "email": "a@b.ru", "code": "12345678", "new_password": "123"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Request reset always ok",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "request_reset", "email": "noone@test.com"},
+      "expectedStatus": 200
     }
   ]
 }

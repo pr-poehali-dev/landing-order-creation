@@ -17,6 +17,15 @@ export const api = {
   login: (email: string, password: string) =>
     fetch(URLS.auth, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'login', email, password }) }).then(r => r.json()),
 
+  verifyLogin: (email: string, code: string) =>
+    fetch(URLS.auth, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'verify_login', email, code }) }).then(r => r.json()),
+
+  requestReset: (email: string) =>
+    fetch(URLS.auth, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'request_reset', email }) }).then(r => r.json()),
+
+  resetPassword: (email: string, code: string, new_password: string) =>
+    fetch(URLS.auth, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'reset_password', email, code, new_password }) }).then(r => r.json()),
+
   me: () =>
     fetch(URLS.auth, { method: 'GET', headers: authHeaders() }).then(r => r.json()),
 
