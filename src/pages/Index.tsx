@@ -835,7 +835,13 @@ export default function Index({ city }: { city?: City }) {
             <span className="font-oswald font-bold tracking-wide">LANDINGGURU.RU</span>
           </div>
           <p className="text-white/30 text-sm text-center">© 2026 LandingGuru.ru. Все права защищены.<br className="sm:hidden" /><span className="hidden sm:inline"> · </span>ИНН 352527263810</p>
-          <div className="flex gap-6 text-sm text-white/40">
+          <div className="flex items-center gap-6 text-sm text-white/40">
+            <a href="https://max.ru/u/f9LHodD0cOJj06yh1kTJ06sB4PTK6zLsmxRFbaKaoh59HuGHA39Igk6McCc"
+              target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-1.5 hover:text-white/70 transition-colors">
+              <Icon name="MessageCircle" size={15} />
+              MAX
+            </a>
             <button onClick={() => setShowPrivacy(true)} className="hover:text-white/70 transition-colors">Политика конфиденциальности</button>
             <button onClick={() => setShowCookie(true)} className="hover:text-white/70 transition-colors">Настройки cookie</button>
           </div>
