@@ -283,12 +283,25 @@ export default function Index({ city }: { city?: City }) {
   const [callback, setCallback] = useState({ name: '', phone: '' });
   const [callbackSent, setCallbackSent] = useState(false);
   const [promos, setPromos] = useState<{ id: number; title: string; description: string; badge: string; old_price: string; new_price: string }[]>([]);
+  const [reviews, setReviews] = useState<{ name: string; role: string; text: string; rating: number; avatar: string }[]>(REVIEWS);
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch('https://functions.poehali.dev/3ce65aba-6279-4e65-a710-af47b06c9b6c?action=public')
       .then(r => r.json())
-      .then(d => { if (d.sections?.promo && Array.isArray(d.promos)) setPromos(d.promos); })
+      .then(d => {
+        if (d.sections?.promo && Array.isArray(d.promos)) setPromos(d.promos);
+        if (d.sections?.reviews !== undefined) {
+          if (d.sections.reviews && Array.isArray(d.reviews)) {
+            setReviews(d.reviews.map((r: { name: string; role: string; text: string; rating: number }) => ({
+              ...r,
+              avatar: r.name.split(' ').map(w => w[0] || '').join('').slice(0, 2).toUpperCase(),
+            })));
+          } else {
+            setReviews([]);
+          }
+        }
+      })
       .catch(() => {});
   }, []);
 
@@ -623,6 +636,7 @@ export default function Index({ city }: { city?: City }) {
       </section>
 
       {/* REVIEWS */}
+      {reviews.length > 0 && (
       <section id="reviews" className="py-20 sm:py-32 px-4 sm:px-6 relative">
         <div className="orb w-[500px] h-[500px] bottom-0 right-0"
           style={{ background: "radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%)" }} />
@@ -635,7 +649,7 @@ export default function Index({ city }: { city?: City }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {REVIEWS.map((r, i) => (
+            {reviews.map((r, i) => (
               <div key={r.name}
                 className="glass-card glass-card-hover rounded-2xl p-7 section-reveal"
                 style={{ transitionDelay: `${i * 0.1}s` }}>
@@ -656,6 +670,7 @@ export default function Index({ city }: { city?: City }) {
           </div>
         </div>
       </section>
+      )}
 
       {/* PROMOS */}
       {promos.length > 0 && (

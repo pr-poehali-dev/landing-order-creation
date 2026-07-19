@@ -62,8 +62,15 @@ def handler(event: dict, context) -> dict:
                 FROM promos WHERE active = TRUE ORDER BY sort_order ASC, id ASC
             """)
             promos = [{'id': r[0], 'title': r[1], 'description': r[2], 'badge': r[3], 'old_price': r[4], 'new_price': r[5]} for r in cur.fetchall()]
+        reviews = []
+        if sections.get('reviews'):
+            cur.execute("""
+                SELECT id, name, role, text, rating
+                FROM reviews WHERE active = TRUE ORDER BY sort_order ASC, id ASC
+            """)
+            reviews = [{'id': r[0], 'name': r[1], 'role': r[2], 'text': r[3], 'rating': r[4]} for r in cur.fetchall()]
         conn.close()
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos})}
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos, 'reviews': reviews})}
 
     admin = get_admin(cur, session_id)
 
@@ -123,6 +130,17 @@ def handler(event: dict, context) -> dict:
         conn.close()
         promos = [{'id': r[0], 'title': r[1], 'description': r[2], 'badge': r[3], 'old_price': r[4], 'new_price': r[5], 'active': r[6], 'sort_order': r[7]} for r in rows]
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'promos': promos})}
+
+    # GET ?action=reviews — все отзывы (для админки)
+    if method == 'GET' and action == 'reviews':
+        cur.execute("""
+            SELECT id, name, role, text, rating, active, sort_order
+            FROM reviews ORDER BY sort_order ASC, id ASC
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        reviews = [{'id': r[0], 'name': r[1], 'role': r[2], 'text': r[3], 'rating': r[4], 'active': r[5], 'sort_order': r[6]} for r in rows]
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'reviews': reviews})}
 
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
@@ -405,6 +423,43 @@ def handler(event: dict, context) -> dict:
                 conn.close()
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
             cur.execute("DELETE FROM promos WHERE id = %s", (promo_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # save_review — создать или обновить отзыв
+        if act == 'save_review':
+            review_id = body.get('id')
+            name = body.get('name', '').strip()
+            role = body.get('role', '').strip()
+            text = body.get('text', '').strip()
+            rating = body.get('rating', 5) or 5
+            active = bool(body.get('active', True))
+            sort_order = body.get('sort_order', 0) or 0
+            if not name:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Имя обязательно'})}
+            if review_id:
+                cur.execute("""
+                    UPDATE reviews SET name=%s, role=%s, text=%s, rating=%s, active=%s, sort_order=%s WHERE id=%s
+                """, (name, role, text, rating, active, sort_order, review_id))
+            else:
+                cur.execute("""
+                    INSERT INTO reviews (name, role, text, rating, active, sort_order)
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                """, (name, role, text, rating, active, sort_order))
+                review_id = cur.fetchone()[0]
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': review_id})}
+
+        # delete_review — удалить отзыв
+        if act == 'delete_review':
+            review_id = body.get('id')
+            if not review_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
+            cur.execute("DELETE FROM reviews WHERE id = %s", (review_id,))
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}

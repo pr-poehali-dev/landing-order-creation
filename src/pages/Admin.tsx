@@ -55,6 +55,8 @@ export default function Admin() {
   const [sections, setSections] = useState<{ key: string; title: string; enabled: boolean }[]>([]);
   const [promos, setPromos] = useState<{ id: number; title: string; description: string; badge: string; old_price: string; new_price: string; active: boolean; sort_order: number }[]>([]);
   const [editingPromo, setEditingPromo] = useState<null | { id?: number; title: string; description: string; badge: string; old_price: string; new_price: string; active: boolean; sort_order: number }>(null);
+  const [reviews, setReviews] = useState<{ id: number; name: string; role: string; text: string; rating: number; active: boolean; sort_order: number }[]>([]);
+  const [editingReview, setEditingReview] = useState<null | { id?: number; name: string; role: string; text: string; rating: number; active: boolean; sort_order: number }>(null);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
   const [peerTyping, setPeerTyping] = useState(false);
@@ -265,9 +267,10 @@ export default function Admin() {
   };
 
   const loadSections = async () => {
-    const [s, p] = await Promise.all([api.adminGetSections(), api.adminGetPromos()]);
+    const [s, p, rv] = await Promise.all([api.adminGetSections(), api.adminGetPromos(), api.adminGetReviews()]);
     if (s.sections) setSections(s.sections);
     if (p.promos) setPromos(p.promos);
+    if (rv.reviews) setReviews(rv.reviews);
   };
 
   const toggleSection = async (key: string, enabled: boolean) => {
@@ -287,6 +290,21 @@ export default function Admin() {
   const deletePromo = async (id: number) => {
     if (!confirm('Удалить акцию?')) return;
     await api.adminDeletePromo(id);
+    loadSections();
+  };
+
+  const emptyReview = { name: '', role: '', text: '', rating: 5, active: true, sort_order: 0 };
+
+  const saveReview = async () => {
+    if (!editingReview || !editingReview.name.trim()) return;
+    await api.adminSaveReview(editingReview);
+    setEditingReview(null);
+    loadSections();
+  };
+
+  const deleteReview = async (id: number) => {
+    if (!confirm('Удалить отзыв?')) return;
+    await api.adminDeleteReview(id);
     loadSections();
   };
 
@@ -516,6 +534,72 @@ export default function Admin() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-['Oswald'] font-bold text-xl">Отзывы</h2>
+                <button onClick={() => setEditingReview({ ...emptyReview })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                  style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.25)' }}>
+                  <Icon name="Plus" size={15} /> Добавить отзыв
+                </button>
+              </div>
+              {reviews.length === 0 && <p className="text-white/40 text-sm">Пока нет ни одного отзыва. Добавьте первый.</p>}
+              <div className="space-y-2">
+                {reviews.map(r => (
+                  <div key={r.id} className="flex items-center justify-between gap-3 p-4 rounded-xl" style={cardStyle}>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold truncate">{r.name}</span>
+                        <span className="text-yellow-400 text-xs">{'★'.repeat(r.rating)}</span>
+                        {!r.active && <span className="text-xs text-white/30">(скрыт)</span>}
+                      </div>
+                      {r.role && <div className="text-white/40 text-xs">{r.role}</div>}
+                      {r.text && <div className="text-white/40 text-xs mt-1 line-clamp-2">{r.text}</div>}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => setEditingReview({ id: r.id, name: r.name, role: r.role, text: r.text, rating: r.rating, active: r.active, sort_order: r.sort_order })}
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-colors"><Icon name="Pencil" size={16} /></button>
+                      <button onClick={() => deleteReview(r.id)}
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-red-400 transition-colors"><Icon name="Trash2" size={16} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingReview && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingReview(null)}>
+            <div className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto" style={{ background: '#12121c', border: '1px solid rgba(168,85,247,0.3)' }} onClick={e => e.stopPropagation()}>
+              <h3 className="font-['Oswald'] font-bold text-xl mb-4">{editingReview.id ? 'Редактировать отзыв' : 'Новый отзыв'}</h3>
+              <div className="space-y-3">
+                <input value={editingReview.name} onChange={e => setEditingReview({ ...editingReview, name: e.target.value })} placeholder="Имя клиента *" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <input value={editingReview.role} onChange={e => setEditingReview({ ...editingReview, role: e.target.value })} placeholder="Должность / компания" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <textarea value={editingReview.text} onChange={e => setEditingReview({ ...editingReview, text: e.target.value })} placeholder="Текст отзыва" rows={4} className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm resize-none" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <div className="flex items-center gap-3">
+                  <label className="text-sm text-white/60">Оценка:</label>
+                  <div className="flex gap-1">
+                    {[1,2,3,4,5].map(n => (
+                      <button key={n} type="button" onClick={() => setEditingReview({ ...editingReview, rating: n })}
+                        className="text-2xl leading-none transition-colors" style={{ color: n <= editingReview.rating ? '#facc15' : 'rgba(255,255,255,0.15)' }}>★</button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="number" value={editingReview.sort_order} onChange={e => setEditingReview({ ...editingReview, sort_order: Number(e.target.value) })} placeholder="Порядок" className="w-24 px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                  <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+                    <input type="checkbox" checked={editingReview.active} onChange={e => setEditingReview({ ...editingReview, active: e.target.checked })} />
+                    Показывать на сайте
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-5">
+                <button onClick={() => setEditingReview(null)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white/60" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>Отмена</button>
+                <button onClick={saveReview} className="flex-1 py-3 rounded-xl text-white text-sm font-semibold" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>Сохранить</button>
               </div>
             </div>
           </div>

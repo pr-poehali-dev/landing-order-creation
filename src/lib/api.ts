@@ -145,4 +145,13 @@ export const api = {
 
   adminDeletePromo: (id: number) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_promo', id }) }).then(r => r.json()),
+
+  adminGetReviews: () =>
+    fetch(`${URLS.admin}?action=reviews`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminSaveReview: (review: { id?: number; name: string; role: string; text: string; rating: number; active: boolean; sort_order: number }) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_review', ...review }) }).then(r => r.json()),
+
+  adminDeleteReview: (id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_review', id }) }).then(r => r.json()),
 };
