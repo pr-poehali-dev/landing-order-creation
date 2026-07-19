@@ -288,6 +288,8 @@ export default function Index({ city }: { city?: City }) {
   const acceptCookie = () => {
     localStorage.setItem('cookie_accepted', '1');
     setShowCookie(false);
+    const w = window as unknown as { loadYandexMetrika?: () => void };
+    if (typeof w.loadYandexMetrika === 'function') w.loadYandexMetrika();
   };
 
   const declineCookie = () => {
