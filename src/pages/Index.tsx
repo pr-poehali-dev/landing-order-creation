@@ -278,7 +278,17 @@ export default function Index({ city }: { city?: City }) {
   const [submitted, setSubmitted] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
+  const [showCookie, setShowCookie] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!localStorage.getItem('cookie_accepted')) setShowCookie(true);
+  }, []);
+
+  const acceptCookie = () => {
+    localStorage.setItem('cookie_accepted', '1');
+    setShowCookie(false);
+  };
 
   useEffect(() => {
     if (city) {
@@ -745,6 +755,26 @@ export default function Index({ city }: { city?: City }) {
           </div>
         </div>
       </footer>
+
+      {showCookie && (
+        <div className="fixed bottom-0 left-0 right-0 z-50"
+          style={{ background: "rgba(15,15,26,0.97)", borderTop: "1px solid rgba(168,85,247,0.3)", backdropFilter: "blur(8px)" }}>
+          <style>{`@keyframes cookieMarquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}.cookie-marquee{display:inline-flex;white-space:nowrap;animation:cookieMarquee 22s linear infinite}.cookie-marquee:hover{animation-play-state:paused}`}</style>
+          <div className="flex items-center gap-3 px-4 py-3 max-w-full">
+            <Icon name="Cookie" size={18} className="text-purple-400 shrink-0" />
+            <div className="flex-1 overflow-hidden">
+              <div className="cookie-marquee text-sm text-white/70">
+                <span className="pr-16">Мы используем файлы cookie, чтобы сайт работал лучше и удобнее для вас. Продолжая пользоваться сайтом, вы соглашаетесь с обработкой файлов cookie и политикой конфиденциальности.</span>
+                <span className="pr-16">Мы используем файлы cookie, чтобы сайт работал лучше и удобнее для вас. Продолжая пользоваться сайтом, вы соглашаетесь с обработкой файлов cookie и политикой конфиденциальности.</span>
+              </div>
+            </div>
+            <button onClick={acceptCookie}
+              className="btn-glow px-4 py-2 rounded-full text-sm font-semibold text-white shrink-0 whitespace-nowrap">
+              Принять
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );
