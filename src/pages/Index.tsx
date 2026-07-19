@@ -768,6 +768,10 @@ export default function Index({ city }: { city?: City }) {
                 <span className="pr-16">Мы используем файлы cookie, чтобы сайт работал лучше и удобнее для вас. Продолжая пользоваться сайтом, вы соглашаетесь с обработкой файлов cookie и политикой конфиденциальности.</span>
               </div>
             </div>
+            <button onClick={() => setShowPrivacy(true)}
+              className="hidden sm:inline text-sm text-white/50 hover:text-white transition-colors shrink-0 whitespace-nowrap underline underline-offset-2">
+              Политика конфиденциальности
+            </button>
             <button onClick={acceptCookie}
               className="btn-glow px-4 py-2 rounded-full text-sm font-semibold text-white shrink-0 whitespace-nowrap">
               Принять
