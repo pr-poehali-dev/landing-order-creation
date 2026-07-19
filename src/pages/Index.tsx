@@ -720,7 +720,19 @@ export default function Index({ city }: { city?: City }) {
       {/* FOOTER */}
       <footer className="py-10 px-6 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
 
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto mb-8">
+          <h3 className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-4 text-center md:text-left">Карта сайта</h3>
+          <nav className="flex flex-wrap gap-x-6 gap-y-2 justify-center md:justify-start text-sm text-white/50">
+            <a href="#advantages" className="hover:text-white transition-colors">Преимущества</a>
+            <a href="#portfolio" className="hover:text-white transition-colors">Портфолио</a>
+            <a href="#process" className="hover:text-white transition-colors">Процесс</a>
+            <a href="#reviews" className="hover:text-white transition-colors">Отзывы</a>
+            <a href="#order" className="hover:text-white transition-colors">Заказать</a>
+            <a href="/login" className="hover:text-white transition-colors">Личный кабинет</a>
+          </nav>
+        </div>
+
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4 pt-8 border-t" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg btn-glow flex items-center justify-center">
               <Icon name="Globe" size={14} className="text-white" />
