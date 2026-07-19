@@ -673,7 +673,7 @@ export default function Index({ city }: { city?: City }) {
                 <button type="submit"
                   disabled={!consent}
                   className="btn-glow w-full py-4 rounded-xl text-white font-bold text-lg mt-2 disabled:opacity-40 disabled:cursor-not-allowed">
-                  Отправить заявку
+                  Рассчитать стоимость
                 </button>
               </form>
             )}
