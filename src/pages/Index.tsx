@@ -562,7 +562,7 @@ export default function Index({ city }: { city?: City }) {
           <div className="text-center mb-12 section-reveal">
             <span className="text-sm font-semibold uppercase tracking-widest text-purple-400 mb-4 block">Начнём прямо сейчас</span>
             <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl mb-4">
-              ОСТАВЬТЕ <span className="gradient-text">ЗАЯВКУ</span>
+              ОСТАВЬТЕ ЗАЯВКУ НА <span className="gradient-text">РАСЧЁТ СТОИМОСТИ</span>
             </h2>
             <p className="text-white/50 text-lg">
               Ответим в течение 30 минут и обсудим ваш проект
