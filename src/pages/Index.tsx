@@ -842,6 +842,14 @@ export default function Index({ city }: { city?: City }) {
         </div>
       </footer>
 
+      {!showCallback && (
+        <button onClick={openCallback} title="Заказать звонок"
+          className="btn-glow fixed right-4 sm:right-6 z-40 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all hover:scale-110"
+          style={{ bottom: showCookie ? "5.5rem" : "1.5rem" }}>
+          <Icon name="Phone" size={22} className="text-white" />
+        </button>
+      )}
+
       {showCookie && (
         <div className="fixed bottom-0 left-0 right-0 z-50"
           style={{ background: "rgba(15,15,26,0.97)", borderTop: "1px solid rgba(168,85,247,0.3)", backdropFilter: "blur(8px)" }}>
