@@ -290,6 +290,11 @@ export default function Index({ city }: { city?: City }) {
     setShowCookie(false);
   };
 
+  const declineCookie = () => {
+    localStorage.setItem('cookie_accepted', 'declined');
+    setShowCookie(false);
+  };
+
   useEffect(() => {
     if (city) {
       document.title = `Создание лендинга в ${city.nameIn} — LandingGuru.ru`;
@@ -771,6 +776,11 @@ export default function Index({ city }: { city?: City }) {
             <button onClick={() => setShowPrivacy(true)}
               className="hidden sm:inline text-sm text-white/50 hover:text-white transition-colors shrink-0 whitespace-nowrap underline underline-offset-2">
               Политика конфиденциальности
+            </button>
+            <button onClick={declineCookie}
+              className="px-4 py-2 rounded-full text-sm font-semibold text-white/60 hover:text-white transition-colors shrink-0 whitespace-nowrap"
+              style={{ border: "1px solid rgba(255,255,255,0.15)" }}>
+              Отклонить
             </button>
             <button onClick={acceptCookie}
               className="btn-glow px-4 py-2 rounded-full text-sm font-semibold text-white shrink-0 whitespace-nowrap">
