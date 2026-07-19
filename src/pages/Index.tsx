@@ -279,6 +279,9 @@ export default function Index({ city }: { city?: City }) {
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
   const [showCookie, setShowCookie] = useState(false);
+  const [showCallback, setShowCallback] = useState(false);
+  const [callback, setCallback] = useState({ name: '', phone: '' });
+  const [callbackSent, setCallbackSent] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -309,6 +312,22 @@ export default function Index({ city }: { city?: City }) {
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const openCallback = () => {
+    setCallbackSent(false);
+    setCallback({ name: '', phone: '' });
+    setShowCallback(true);
+  };
+
+  const handleCallbackSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await fetch('https://functions.poehali.dev/03da1169-73aa-4c48-b325-94ad3d6e3160', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...callback, comment: 'Обратный звонок', city: city?.name }),
+    });
+    setCallbackSent(true);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await fetch('https://functions.poehali.dev/03da1169-73aa-4c48-b325-94ad3d6e3160', {
@@ -323,6 +342,59 @@ export default function Index({ city }: { city?: City }) {
     <div className="noise-bg min-h-screen bg-[#09090f] text-white overflow-x-hidden">
       {showPrivacy && <PrivacyModal onClose={() => setShowPrivacy(false)} />}
       {activePortfolio && <PortfolioModal item={activePortfolio} onClose={() => setActivePortfolio(null)} />}
+
+      {showCallback && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}
+          onClick={() => setShowCallback(false)}>
+          <div className="w-full max-w-sm rounded-2xl p-6 relative"
+            style={{ background: "#12121c", border: "1px solid rgba(168,85,247,0.3)" }}
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowCallback(false)}
+              className="absolute top-4 right-4 text-white/40 hover:text-white transition-colors">
+              <Icon name="X" size={20} />
+            </button>
+            {callbackSent ? (
+              <div className="text-center py-6">
+                <div className="w-14 h-14 rounded-full btn-glow flex items-center justify-center mx-auto mb-4">
+                  <Icon name="Check" size={26} className="text-white" />
+                </div>
+                <h3 className="font-oswald font-bold text-xl mb-2">Заявка принята!</h3>
+                <p className="text-white/50 text-sm">Мы перезвоним вам в течение 30 минут</p>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-1">
+                  <Icon name="Phone" size={18} className="text-purple-400" />
+                  <h3 className="font-oswald font-bold text-xl">Заказать звонок</h3>
+                </div>
+                <p className="text-white/50 text-sm mb-5">Оставьте контакты — перезвоним в течение 30 минут</p>
+                <form onSubmit={handleCallbackSubmit} className="space-y-3">
+                  <input required value={callback.name}
+                    onChange={e => setCallback({ ...callback, name: e.target.value })}
+                    placeholder="Как вас зовут?"
+                    className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }} />
+                  <input required type="tel" value={callback.phone}
+                    onChange={e => setCallback({ ...callback, phone: e.target.value })}
+                    placeholder="+7 (___) ___-__-__"
+                    className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm"
+                    style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.12)" }} />
+                  <button type="submit"
+                    className="btn-glow w-full py-3.5 rounded-xl text-white font-bold mt-1">
+                    Жду звонка
+                  </button>
+                  <p className="text-white/30 text-xs text-center">
+                    Нажимая кнопку, вы соглашаетесь с{" "}
+                    <button type="button" onClick={() => { setShowCallback(false); setShowPrivacy(true); }}
+                      className="underline hover:text-white/60">политикой конфиденциальности</button>
+                  </p>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* NAV */}
       <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 gap-2"
@@ -345,6 +417,12 @@ export default function Index({ city }: { city?: City }) {
             style={{ border: "1px solid rgba(255,255,255,0.12)" }}>
             Вход
           </a>
+          <button onClick={openCallback} title="Заказать звонок"
+            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-sm font-semibold text-white/70 hover:text-white transition-colors"
+            style={{ border: "1px solid rgba(255,255,255,0.12)" }}>
+            <Icon name="Phone" size={15} />
+            <span className="hidden sm:inline">Звонок</span>
+          </button>
           <button onClick={scrollToForm}
             className="btn-glow px-4 sm:px-5 py-2.5 sm:py-2 rounded-full text-sm font-semibold text-white">
             Рассчитать стоимость
