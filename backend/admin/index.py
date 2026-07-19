@@ -50,6 +50,21 @@ def handler(event: dict, context) -> dict:
 
     conn = get_conn()
     cur = conn.cursor()
+
+    # ПУБЛИЧНЫЙ доступ (без авторизации): активные разделы и акции для главной
+    if method == 'GET' and action == 'public':
+        cur.execute("SELECT key, enabled FROM site_sections")
+        sections = {r[0]: r[1] for r in cur.fetchall()}
+        promos = []
+        if sections.get('promo'):
+            cur.execute("""
+                SELECT id, title, description, badge, old_price, new_price
+                FROM promos WHERE active = TRUE ORDER BY sort_order ASC, id ASC
+            """)
+            promos = [{'id': r[0], 'title': r[1], 'description': r[2], 'badge': r[3], 'old_price': r[4], 'new_price': r[5]} for r in cur.fetchall()]
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos})}
+
     admin = get_admin(cur, session_id)
 
     if not admin:
@@ -89,6 +104,25 @@ def handler(event: dict, context) -> dict:
         awaiting = [r[0] for r in cur.fetchall()]
         conn.close()
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'counts': counts, 'awaiting_payments': awaiting})}
+
+    # GET ?action=sections — список разделов сайта (вкл/выкл)
+    if method == 'GET' and action == 'sections':
+        cur.execute("SELECT key, title, enabled FROM site_sections ORDER BY title")
+        rows = cur.fetchall()
+        conn.close()
+        sections = [{'key': r[0], 'title': r[1], 'enabled': r[2]} for r in rows]
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections})}
+
+    # GET ?action=promos — все акции (для админки)
+    if method == 'GET' and action == 'promos':
+        cur.execute("""
+            SELECT id, title, description, badge, old_price, new_price, active, sort_order
+            FROM promos ORDER BY sort_order ASC, id ASC
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        promos = [{'id': r[0], 'title': r[1], 'description': r[2], 'badge': r[3], 'old_price': r[4], 'new_price': r[5], 'active': r[6], 'sort_order': r[7]} for r in rows]
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'promos': promos})}
 
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
@@ -323,6 +357,57 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': row[0], 'created_at': json_serial(row[1])})}
+
+        # toggle_section — включить/выключить раздел сайта
+        if act == 'toggle_section':
+            key = body.get('key', '').strip()
+            enabled = bool(body.get('enabled'))
+            if not key:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'key обязателен'})}
+            cur.execute("UPDATE site_sections SET enabled = %s, updated_at = NOW() WHERE key = %s", (enabled, key))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # save_promo — создать или обновить акцию
+        if act == 'save_promo':
+            promo_id = body.get('id')
+            title = body.get('title', '').strip()
+            description = body.get('description', '').strip()
+            badge = body.get('badge', '').strip()
+            old_price = body.get('old_price', '').strip()
+            new_price = body.get('new_price', '').strip()
+            active = bool(body.get('active', True))
+            sort_order = body.get('sort_order', 0) or 0
+            if not title:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Заголовок обязателен'})}
+            if promo_id:
+                cur.execute("""
+                    UPDATE promos SET title=%s, description=%s, badge=%s, old_price=%s, new_price=%s, active=%s, sort_order=%s
+                    WHERE id=%s
+                """, (title, description, badge, old_price, new_price, active, sort_order, promo_id))
+            else:
+                cur.execute("""
+                    INSERT INTO promos (title, description, badge, old_price, new_price, active, sort_order)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id
+                """, (title, description, badge, old_price, new_price, active, sort_order))
+                promo_id = cur.fetchone()[0]
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': promo_id})}
+
+        # delete_promo — удалить акцию
+        if act == 'delete_promo':
+            promo_id = body.get('id')
+            if not promo_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
+            cur.execute("DELETE FROM promos WHERE id = %s", (promo_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
     conn.close()
     return {'statusCode': 404, 'headers': cors, 'body': json.dumps({'error': 'Not found'})}

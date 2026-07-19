@@ -282,7 +282,15 @@ export default function Index({ city }: { city?: City }) {
   const [showCallback, setShowCallback] = useState(false);
   const [callback, setCallback] = useState({ name: '', phone: '' });
   const [callbackSent, setCallbackSent] = useState(false);
+  const [promos, setPromos] = useState<{ id: number; title: string; description: string; badge: string; old_price: string; new_price: string }[]>([]);
   const formRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    fetch('https://functions.poehali.dev/3ce65aba-6279-4e65-a710-af47b06c9b6c?action=public')
+      .then(r => r.json())
+      .then(d => { if (d.sections?.promo && Array.isArray(d.promos)) setPromos(d.promos); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!localStorage.getItem('cookie_accepted')) setShowCookie(true);
@@ -648,6 +656,45 @@ export default function Index({ city }: { city?: City }) {
           </div>
         </div>
       </section>
+
+      {/* PROMOS */}
+      {promos.length > 0 && (
+        <section id="promo" className="py-20 sm:py-32 px-4 sm:px-6 relative">
+          <div className="orb w-[500px] h-[500px] top-0 right-0"
+            style={{ background: "radial-gradient(circle, rgba(0,245,255,0.1) 0%, transparent 70%)" }} />
+          <div className="max-w-6xl mx-auto relative z-10">
+            <div className="text-center mb-12 section-reveal">
+              <span className="text-sm font-semibold uppercase tracking-widest text-purple-400 mb-4 block">Выгодные предложения</span>
+              <h2 className="font-oswald font-black text-3xl sm:text-5xl md:text-6xl">
+                АКЦИИ И <span className="gradient-text">СПЕЦПРЕДЛОЖЕНИЯ</span>
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {promos.map(p => (
+                <div key={p.id} className="rounded-2xl p-6 section-reveal flex flex-col"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(168,85,247,0.2)" }}>
+                  {p.badge && (
+                    <span className="self-start text-xs font-bold px-3 py-1 rounded-full mb-4"
+                      style={{ background: "linear-gradient(135deg, #a855f7, #7c3aed)", color: "white" }}>{p.badge}</span>
+                  )}
+                  <h3 className="font-oswald font-bold text-xl mb-2">{p.title}</h3>
+                  {p.description && <p className="text-white/50 text-sm mb-4 flex-1 whitespace-pre-line">{p.description}</p>}
+                  {(p.old_price || p.new_price) && (
+                    <div className="flex items-baseline gap-3 mb-4">
+                      {p.old_price && <span className="text-white/30 line-through text-lg">{p.old_price}</span>}
+                      {p.new_price && <span className="gradient-text font-oswald font-black text-2xl">{p.new_price}</span>}
+                    </div>
+                  )}
+                  <button onClick={scrollToForm}
+                    className="btn-glow w-full py-3 rounded-xl text-white text-sm font-semibold mt-auto">
+                    Получить предложение
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA + FORM */}
       <section id="order" className="py-20 sm:py-32 px-4 sm:px-6 relative">

@@ -21,7 +21,7 @@ type Project = { id: number; user_id: number; title: string; status: string; des
 
 export default function Admin() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<'projects' | 'users' | 'chat'>('projects');
+  const [tab, setTab] = useState<'projects' | 'users' | 'chat' | 'sections'>('projects');
   const [users, setUsers] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
@@ -52,6 +52,9 @@ export default function Admin() {
   const [pwdError, setPwdError] = useState('');
   const [pwdInfo, setPwdInfo] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [sections, setSections] = useState<{ key: string; title: string; enabled: boolean }[]>([]);
+  const [promos, setPromos] = useState<{ id: number; title: string; description: string; badge: string; old_price: string; new_price: string; active: boolean; sort_order: number }[]>([]);
+  const [editingPromo, setEditingPromo] = useState<null | { id?: number; title: string; description: string; badge: string; old_price: string; new_price: string; active: boolean; sort_order: number }>(null);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
   const [peerTyping, setPeerTyping] = useState(false);
@@ -64,6 +67,7 @@ export default function Admin() {
   const openProjectRef = useRef<((p: Project, msgs?: {id:number;text:string;author:string;is_admin:boolean}[]) => void) | null>(null);
   const subTabRef = useRef<string>('messages');
 
+  useEffect(() => { if (tab === 'sections') loadSections(); }, [tab]);
   useEffect(() => { selectedProjectRef.current = selectedProject; }, [selectedProject]);
   useEffect(() => { subTabRef.current = subTab; }, [subTab]);
   useEffect(() => { messagesRef.current = messages; }, [messages]);
@@ -260,6 +264,32 @@ export default function Admin() {
     loadData();
   };
 
+  const loadSections = async () => {
+    const [s, p] = await Promise.all([api.adminGetSections(), api.adminGetPromos()]);
+    if (s.sections) setSections(s.sections);
+    if (p.promos) setPromos(p.promos);
+  };
+
+  const toggleSection = async (key: string, enabled: boolean) => {
+    setSections(prev => prev.map(s => s.key === key ? { ...s, enabled } : s));
+    await api.adminToggleSection(key, enabled);
+  };
+
+  const emptyPromo = { title: '', description: '', badge: '', old_price: '', new_price: '', active: true, sort_order: 0 };
+
+  const savePromo = async () => {
+    if (!editingPromo || !editingPromo.title.trim()) return;
+    await api.adminSavePromo(editingPromo);
+    setEditingPromo(null);
+    loadSections();
+  };
+
+  const deletePromo = async (id: number) => {
+    if (!confirm('Удалить акцию?')) return;
+    await api.adminDeletePromo(id);
+    loadSections();
+  };
+
   const startEditUser = (u: User) => {
     setEditingUser(u);
     setEditUser({ name: u.name, email: u.email, password: '' });
@@ -414,13 +444,13 @@ export default function Admin() {
         <style>{`@keyframes chatBlink{0%,100%{background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);border-color:rgba(255,255,255,0.08)}50%{background:rgba(74,222,128,0.25);color:#4ade80;border-color:rgba(74,222,128,0.5)}}.chat-blink{animation:chatBlink 0.5s ease-in-out 3}`}</style>
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          {(['projects', 'users', 'chat'] as const).map(t => {
+          {(['projects', 'users', 'chat', 'sections'] as const).map(t => {
             const totalUnread = Object.values(unread).reduce((s, n) => s + n, 0);
             return (
             <button key={t} onClick={() => setTab(t)}
               className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${t === 'chat' && chatBlink && tab !== 'chat' ? 'chat-blink' : ''}`}
               style={tab === t ? { background: 'rgba(168,85,247,0.2)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.3)' } : { ...cardStyle, color: 'rgba(255,255,255,0.4)' }}>
-              {t === 'projects' ? 'Проекты' : t === 'users' ? 'Клиенты' : 'Чат'}
+              {t === 'projects' ? 'Проекты' : t === 'users' ? 'Клиенты' : t === 'chat' ? 'Чат' : 'Разделы сайта'}
               {t === 'chat' && totalUnread > 0 && (
                 <span className="text-xs font-bold px-1.5 py-0.5 rounded-full leading-none" style={{ background: '#a855f7', color: 'white' }}>{totalUnread}</span>
               )}
@@ -428,6 +458,96 @@ export default function Admin() {
             );
           })}
         </div>
+
+        {tab === 'sections' && (
+          <div className="space-y-8">
+            <div>
+              <h2 className="font-['Oswald'] font-bold text-xl mb-1">Разделы сайта</h2>
+              <p className="text-white/40 text-sm mb-4">Включайте и выключайте блоки на главной странице</p>
+              <div className="space-y-2">
+                {sections.map(s => (
+                  <div key={s.key} className="flex items-center justify-between p-4 rounded-xl" style={cardStyle}>
+                    <div>
+                      <div className="font-semibold">{s.title}</div>
+                      <div className="text-white/40 text-xs">{s.enabled ? 'Показывается на сайте' : 'Скрыт'}</div>
+                    </div>
+                    <button onClick={() => toggleSection(s.key, !s.enabled)}
+                      className="relative w-12 h-6 rounded-full transition-colors"
+                      style={{ background: s.enabled ? '#a855f7' : 'rgba(255,255,255,0.15)' }}>
+                      <span className="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all" style={{ left: s.enabled ? '26px' : '2px' }} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-['Oswald'] font-bold text-xl">Акции</h2>
+                <button onClick={() => setEditingPromo({ ...emptyPromo })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                  style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.25)' }}>
+                  <Icon name="Plus" size={15} /> Добавить акцию
+                </button>
+              </div>
+              {promos.length === 0 && <p className="text-white/40 text-sm">Пока нет ни одной акции. Добавьте первую.</p>}
+              <div className="space-y-2">
+                {promos.map(p => (
+                  <div key={p.id} className="flex items-center justify-between gap-3 p-4 rounded-xl" style={cardStyle}>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {p.badge && <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: 'rgba(168,85,247,0.2)', color: '#a855f7' }}>{p.badge}</span>}
+                        <span className="font-semibold truncate">{p.title}</span>
+                        {!p.active && <span className="text-xs text-white/30">(скрыта)</span>}
+                      </div>
+                      {p.description && <div className="text-white/40 text-xs mt-1 line-clamp-2">{p.description}</div>}
+                      {(p.old_price || p.new_price) && (
+                        <div className="text-xs mt-1">
+                          {p.old_price && <span className="text-white/30 line-through mr-2">{p.old_price}</span>}
+                          {p.new_price && <span className="text-white font-semibold">{p.new_price}</span>}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => setEditingPromo({ id: p.id, title: p.title, description: p.description, badge: p.badge, old_price: p.old_price, new_price: p.new_price, active: p.active, sort_order: p.sort_order })}
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-colors"><Icon name="Pencil" size={16} /></button>
+                      <button onClick={() => deletePromo(p.id)}
+                        className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-red-400 transition-colors"><Icon name="Trash2" size={16} /></button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingPromo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingPromo(null)}>
+            <div className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto" style={{ background: '#12121c', border: '1px solid rgba(168,85,247,0.3)' }} onClick={e => e.stopPropagation()}>
+              <h3 className="font-['Oswald'] font-bold text-xl mb-4">{editingPromo.id ? 'Редактировать акцию' : 'Новая акция'}</h3>
+              <div className="space-y-3">
+                <input value={editingPromo.title} onChange={e => setEditingPromo({ ...editingPromo, title: e.target.value })} placeholder="Заголовок акции *" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <textarea value={editingPromo.description} onChange={e => setEditingPromo({ ...editingPromo, description: e.target.value })} placeholder="Описание" rows={3} className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm resize-none" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <input value={editingPromo.badge} onChange={e => setEditingPromo({ ...editingPromo, badge: e.target.value })} placeholder="Плашка (напр. -30% или Хит)" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <div className="grid grid-cols-2 gap-3">
+                  <input value={editingPromo.old_price} onChange={e => setEditingPromo({ ...editingPromo, old_price: e.target.value })} placeholder="Старая цена" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                  <input value={editingPromo.new_price} onChange={e => setEditingPromo({ ...editingPromo, new_price: e.target.value })} placeholder="Новая цена" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="number" value={editingPromo.sort_order} onChange={e => setEditingPromo({ ...editingPromo, sort_order: Number(e.target.value) })} placeholder="Порядок" className="w-24 px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                  <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+                    <input type="checkbox" checked={editingPromo.active} onChange={e => setEditingPromo({ ...editingPromo, active: e.target.checked })} />
+                    Показывать на сайте
+                  </label>
+                </div>
+              </div>
+              <div className="flex gap-2 mt-5">
+                <button onClick={() => setEditingPromo(null)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white/60" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>Отмена</button>
+                <button onClick={savePromo} className="flex-1 py-3 rounded-xl text-white text-sm font-semibold" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>Сохранить</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {tab === 'users' && (
           <div>

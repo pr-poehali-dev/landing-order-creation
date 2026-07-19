@@ -17,6 +17,12 @@
       "method": "GET",
       "path": "/?action=unread",
       "expectedStatus": 403
+    },
+    {
+      "name": "Public content без авторизации",
+      "method": "GET",
+      "path": "/?action=public",
+      "expectedStatus": 200
     }
   ]
 }

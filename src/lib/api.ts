@@ -127,4 +127,22 @@ export const api = {
 
   notifyInvoice: (project_id: number, invoice_title: string, amount: number) =>
     fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'invoice', project_id, invoice_title, amount }) }).then(r => r.json()),
+
+  getPublicContent: () =>
+    fetch(`${URLS.admin}?action=public`).then(r => r.json()),
+
+  adminGetSections: () =>
+    fetch(`${URLS.admin}?action=sections`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminToggleSection: (key: string, enabled: boolean) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'toggle_section', key, enabled }) }).then(r => r.json()),
+
+  adminGetPromos: () =>
+    fetch(`${URLS.admin}?action=promos`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminSavePromo: (promo: { id?: number; title: string; description: string; badge: string; old_price: string; new_price: string; active: boolean; sort_order: number }) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_promo', ...promo }) }).then(r => r.json()),
+
+  adminDeletePromo: (id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_promo', id }) }).then(r => r.json()),
 };
