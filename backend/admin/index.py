@@ -108,6 +108,27 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': user_id})}
 
+        # change_password — админ меняет свой пароль
+        if act == 'change_password':
+            current = body.get('current_password', '').strip()
+            new_password = body.get('new_password', '').strip()
+            if not current or not new_password:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Заполните все поля'})}
+            if len(new_password) < 6:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Пароль должен быть не короче 6 символов'})}
+            cur.execute("SELECT password_hash FROM users WHERE id = %s", (admin[0],))
+            row = cur.fetchone()
+            if not row or row[0] != hash_password(current):
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Текущий пароль неверный'})}
+            cur.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hash_password(new_password), admin[0]))
+            cur.execute("UPDATE sessions SET expires_at = NOW() WHERE user_id = %s AND id != %s", (admin[0], session_id))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
         # create_project
         if act == 'create_project':
             user_id = body.get('user_id')

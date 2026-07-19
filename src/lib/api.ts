@@ -62,6 +62,9 @@ export const api = {
   adminGetUnread: () =>
     fetch(`${URLS.admin}?action=unread`, { headers: authHeaders() }).then(r => r.json()),
 
+  adminChangePassword: (current_password: string, new_password: string) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'change_password', current_password, new_password }) }).then(r => r.json()),
+
   adminCreateUser: (name: string, email: string, password: string) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'create_user', name, email, password }) }).then(r => r.json()),
 

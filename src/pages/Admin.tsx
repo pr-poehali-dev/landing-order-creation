@@ -47,6 +47,10 @@ export default function Admin() {
   const soundOnRef = useRef(soundOn);
   useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
   const toggleSound = () => setSoundOn(v => { localStorage.setItem('sound_off', v ? '1' : '0'); return !v; });
+  const [showChangePwd, setShowChangePwd] = useState(false);
+  const [pwdForm, setPwdForm] = useState({ current: '', next: '', confirm: '' });
+  const [pwdError, setPwdError] = useState('');
+  const [pwdInfo, setPwdInfo] = useState('');
   const [uploadingFile, setUploadingFile] = useState(false);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
@@ -333,6 +337,18 @@ export default function Admin() {
     navigate('/login');
   };
 
+  const changePassword = async () => {
+    setPwdError(''); setPwdInfo('');
+    if (!pwdForm.current || !pwdForm.next) { setPwdError('Заполните все поля'); return; }
+    if (pwdForm.next.length < 6) { setPwdError('Новый пароль не короче 6 символов'); return; }
+    if (pwdForm.next !== pwdForm.confirm) { setPwdError('Пароли не совпадают'); return; }
+    const res = await api.adminChangePassword(pwdForm.current, pwdForm.next);
+    if (res?.error) { setPwdError(res.error); return; }
+    setPwdInfo('Пароль изменён');
+    setPwdForm({ current: '', next: '', confirm: '' });
+    setTimeout(() => setShowChangePwd(false), 1200);
+  };
+
   const inputCls = "w-full px-3 py-2.5 rounded-xl text-white placeholder-white/30 outline-none text-sm";
   const inputStyle = { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)', fontFamily: 'Golos Text, sans-serif' };
   const cardStyle = { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)' };
@@ -353,11 +369,46 @@ export default function Admin() {
             className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
             <Icon name={soundOn ? 'Volume2' : 'VolumeX'} size={16} />
           </button>
+          <button onClick={() => { setPwdError(''); setPwdInfo(''); setPwdForm({ current: '', next: '', confirm: '' }); setShowChangePwd(true); }}
+            title="Сменить пароль"
+            className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
+            <Icon name="KeyRound" size={15} />
+          </button>
           <button onClick={logout} className="flex items-center gap-1.5 text-sm text-white/40 hover:text-white/70 transition-colors">
             <Icon name="LogOut" size={15} /> Выйти
           </button>
         </div>
       </header>
+
+      {showChangePwd && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.6)' }}
+          onClick={() => setShowChangePwd(false)}>
+          <div className="w-full max-w-sm rounded-2xl p-6" style={{ background: '#12121c', border: '1px solid rgba(168,85,247,0.25)' }}
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-['Oswald'] font-bold text-lg">Смена пароля</h3>
+              <button onClick={() => setShowChangePwd(false)} className="text-white/40 hover:text-white/80">
+                <Icon name="X" size={18} />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <input type="password" className={inputCls} style={inputStyle} placeholder="Текущий пароль"
+                value={pwdForm.current} onChange={e => setPwdForm({ ...pwdForm, current: e.target.value })} />
+              <input type="password" className={inputCls} style={inputStyle} placeholder="Новый пароль"
+                value={pwdForm.next} onChange={e => setPwdForm({ ...pwdForm, next: e.target.value })} />
+              <input type="password" className={inputCls} style={inputStyle} placeholder="Повторите новый пароль"
+                value={pwdForm.confirm} onChange={e => setPwdForm({ ...pwdForm, confirm: e.target.value })} />
+              {pwdError && <p className="text-red-400 text-sm">{pwdError}</p>}
+              {pwdInfo && <p className="text-emerald-400 text-sm">{pwdInfo}</p>}
+              <button onClick={changePassword}
+                className="w-full py-3 rounded-xl text-white font-semibold text-sm mt-1"
+                style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>
+                Сохранить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <style>{`@keyframes chatBlink{0%,100%{background:rgba(255,255,255,0.03);color:rgba(255,255,255,0.4);border-color:rgba(255,255,255,0.08)}50%{background:rgba(74,222,128,0.25);color:#4ade80;border-color:rgba(74,222,128,0.5)}}.chat-blink{animation:chatBlink 0.5s ease-in-out 3}`}</style>
