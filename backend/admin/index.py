@@ -69,8 +69,15 @@ def handler(event: dict, context) -> dict:
                 FROM reviews WHERE active = TRUE ORDER BY sort_order ASC, id ASC
             """)
             reviews = [{'id': r[0], 'name': r[1], 'role': r[2], 'text': r[3], 'rating': r[4]} for r in cur.fetchall()]
+        portfolio = []
+        if sections.get('portfolio'):
+            cur.execute("""
+                SELECT id, title, category, image_url, color
+                FROM portfolio WHERE active = TRUE ORDER BY sort_order ASC, id ASC
+            """)
+            portfolio = [{'id': r[0], 'title': r[1], 'category': r[2], 'img': r[3], 'color': r[4]} for r in cur.fetchall()]
         conn.close()
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos, 'reviews': reviews})}
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sections': sections, 'promos': promos, 'reviews': reviews, 'portfolio': portfolio})}
 
     admin = get_admin(cur, session_id)
 
@@ -141,6 +148,17 @@ def handler(event: dict, context) -> dict:
         conn.close()
         reviews = [{'id': r[0], 'name': r[1], 'role': r[2], 'text': r[3], 'rating': r[4], 'active': r[5], 'sort_order': r[6]} for r in rows]
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'reviews': reviews})}
+
+    # GET ?action=portfolio — все работы (для админки)
+    if method == 'GET' and action == 'portfolio':
+        cur.execute("""
+            SELECT id, title, category, image_url, color, active, sort_order
+            FROM portfolio ORDER BY sort_order ASC, id ASC
+        """)
+        rows = cur.fetchall()
+        conn.close()
+        items = [{'id': r[0], 'title': r[1], 'category': r[2], 'image_url': r[3], 'color': r[4], 'active': r[5], 'sort_order': r[6]} for r in rows]
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'portfolio': items})}
 
     if method == 'POST':
         body = json.loads(event.get('body') or '{}')
@@ -460,6 +478,63 @@ def handler(event: dict, context) -> dict:
                 conn.close()
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
             cur.execute("DELETE FROM reviews WHERE id = %s", (review_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # upload_image — загрузка картинки в S3, возврат публичного URL
+        if act == 'upload_image':
+            file_name = body.get('file_name', 'image.jpg')
+            file_data = body.get('file_data', '')
+            if not file_data:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'file_data обязателен'})}
+            raw = base64.b64decode(file_data)
+            ext = os.path.splitext(file_name)[1].lower() or '.jpg'
+            content_type = mimetypes.guess_type(file_name)[0] or 'image/jpeg'
+            key = f"portfolio/{uuid.uuid4().hex}{ext}"
+            s3 = boto3.client('s3',
+                endpoint_url='https://bucket.poehali.dev',
+                aws_access_key_id=os.environ['AWS_ACCESS_KEY_ID'],
+                aws_secret_access_key=os.environ['AWS_SECRET_ACCESS_KEY'])
+            s3.put_object(Bucket='files', Key=key, Body=raw, ContentType=content_type)
+            cdn_url = f"https://cdn.poehali.dev/projects/{os.environ['AWS_ACCESS_KEY_ID']}/bucket/{key}"
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'url': cdn_url})}
+
+        # save_portfolio — создать или обновить работу
+        if act == 'save_portfolio':
+            item_id = body.get('id')
+            title = body.get('title', '').strip()
+            category = body.get('category', '').strip()
+            image_url = body.get('image_url', '').strip()
+            color = body.get('color', '#a855f7').strip() or '#a855f7'
+            active = bool(body.get('active', True))
+            sort_order = body.get('sort_order', 0) or 0
+            if not title:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Название обязательно'})}
+            if item_id:
+                cur.execute("""
+                    UPDATE portfolio SET title=%s, category=%s, image_url=%s, color=%s, active=%s, sort_order=%s WHERE id=%s
+                """, (title, category, image_url, color, active, sort_order, item_id))
+            else:
+                cur.execute("""
+                    INSERT INTO portfolio (title, category, image_url, color, active, sort_order)
+                    VALUES (%s, %s, %s, %s, %s, %s) RETURNING id
+                """, (title, category, image_url, color, active, sort_order))
+                item_id = cur.fetchone()[0]
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': item_id})}
+
+        # delete_portfolio — удалить работу
+        if act == 'delete_portfolio':
+            item_id = body.get('id')
+            if not item_id:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
+            cur.execute("DELETE FROM portfolio WHERE id = %s", (item_id,))
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}

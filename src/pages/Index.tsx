@@ -81,7 +81,7 @@ const REVIEWS = [
   },
 ];
 
-function PortfolioModal({ item, onClose }: { item: typeof PORTFOLIO[0]; onClose: () => void }) {
+function PortfolioModal({ item, onClose }: { item: { title: string; category: string; img: string; color: string }; onClose: () => void }) {
   useEffect(() => {
     document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -277,7 +277,8 @@ export default function Index({ city }: { city?: City }) {
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
-  const [activePortfolio, setActivePortfolio] = useState<typeof PORTFOLIO[0] | null>(null);
+  const [portfolio, setPortfolio] = useState<{ title: string; category: string; img: string; color: string }[]>(PORTFOLIO);
+  const [activePortfolio, setActivePortfolio] = useState<{ title: string; category: string; img: string; color: string } | null>(null);
   const [showCookie, setShowCookie] = useState(false);
   const [showCallback, setShowCallback] = useState(false);
   const [callback, setCallback] = useState({ name: '', phone: '' });
@@ -300,6 +301,9 @@ export default function Index({ city }: { city?: City }) {
           } else {
             setReviews([]);
           }
+        }
+        if (d.sections?.portfolio !== undefined) {
+          setPortfolio(d.sections.portfolio && Array.isArray(d.portfolio) ? d.portfolio : []);
         }
       })
       .catch(() => {});
@@ -557,6 +561,7 @@ export default function Index({ city }: { city?: City }) {
       </section>
 
       {/* PORTFOLIO */}
+      {portfolio.length > 0 && (
       <section id="portfolio" className="py-20 sm:py-32 px-4 sm:px-6 relative">
         <div className="orb w-[400px] h-[400px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{ background: "radial-gradient(circle, rgba(0,245,255,0.06) 0%, transparent 70%)" }} />
@@ -572,7 +577,7 @@ export default function Index({ city }: { city?: City }) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {PORTFOLIO.map((item, i) => (
+            {portfolio.map((item, i) => (
               <div key={item.title}
                 className="group relative rounded-2xl overflow-hidden section-reveal cursor-pointer"
                 style={{ transitionDelay: `${i * 0.15}s`, aspectRatio: "4/3" }}>
@@ -601,6 +606,7 @@ export default function Index({ city }: { city?: City }) {
           </div>
         </div>
       </section>
+      )}
 
       {/* PROCESS */}
       <section id="process" className="py-20 sm:py-32 px-4 sm:px-6">

@@ -57,6 +57,10 @@ export default function Admin() {
   const [editingPromo, setEditingPromo] = useState<null | { id?: number; title: string; description: string; badge: string; old_price: string; new_price: string; active: boolean; sort_order: number }>(null);
   const [reviews, setReviews] = useState<{ id: number; name: string; role: string; text: string; rating: number; active: boolean; sort_order: number }[]>([]);
   const [editingReview, setEditingReview] = useState<null | { id?: number; name: string; role: string; text: string; rating: number; active: boolean; sort_order: number }>(null);
+  const [portfolio, setPortfolio] = useState<{ id: number; title: string; category: string; image_url: string; color: string; active: boolean; sort_order: number }[]>([]);
+  const [editingPortfolio, setEditingPortfolio] = useState<null | { id?: number; title: string; category: string; image_url: string; color: string; active: boolean; sort_order: number }>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const portfolioImgRef = useRef<HTMLInputElement>(null);
   const fileInputAdminRef = useRef<HTMLInputElement>(null);
   const fileInputTabRef = useRef<HTMLInputElement>(null);
   const [peerTyping, setPeerTyping] = useState(false);
@@ -267,10 +271,11 @@ export default function Admin() {
   };
 
   const loadSections = async () => {
-    const [s, p, rv] = await Promise.all([api.adminGetSections(), api.adminGetPromos(), api.adminGetReviews()]);
+    const [s, p, rv, pf] = await Promise.all([api.adminGetSections(), api.adminGetPromos(), api.adminGetReviews(), api.adminGetPortfolio()]);
     if (s.sections) setSections(s.sections);
     if (p.promos) setPromos(p.promos);
     if (rv.reviews) setReviews(rv.reviews);
+    if (pf.portfolio) setPortfolio(pf.portfolio);
   };
 
   const toggleSection = async (key: string, enabled: boolean) => {
@@ -305,6 +310,35 @@ export default function Admin() {
   const deleteReview = async (id: number) => {
     if (!confirm('Удалить отзыв?')) return;
     await api.adminDeleteReview(id);
+    loadSections();
+  };
+
+  const emptyPortfolio = { title: '', category: '', image_url: '', color: '#a855f7', active: true, sort_order: 0 };
+
+  const uploadPortfolioImage = async (file: File) => {
+    if (!editingPortfolio) return;
+    setUploadingImage(true);
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const b64 = String(reader.result).split(',')[1];
+      const res = await api.adminUploadImage(file.name, b64);
+      if (res.url) setEditingPortfolio(prev => prev ? { ...prev, image_url: res.url } : prev);
+      setUploadingImage(false);
+    };
+    reader.onerror = () => setUploadingImage(false);
+    reader.readAsDataURL(file);
+  };
+
+  const savePortfolio = async () => {
+    if (!editingPortfolio || !editingPortfolio.title.trim()) return;
+    await api.adminSavePortfolio(editingPortfolio);
+    setEditingPortfolio(null);
+    loadSections();
+  };
+
+  const deletePortfolio = async (id: number) => {
+    if (!confirm('Удалить работу?')) return;
+    await api.adminDeletePortfolio(id);
     loadSections();
   };
 
@@ -567,6 +601,75 @@ export default function Admin() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="font-['Oswald'] font-bold text-xl">Портфолио</h2>
+                <button onClick={() => setEditingPortfolio({ ...emptyPortfolio })}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold"
+                  style={{ background: 'rgba(168,85,247,0.15)', color: '#a855f7', border: '1px solid rgba(168,85,247,0.25)' }}>
+                  <Icon name="Plus" size={15} /> Добавить работу
+                </button>
+              </div>
+              {portfolio.length === 0 && <p className="text-white/40 text-sm">Пока нет ни одной работы. Добавьте первую.</p>}
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {portfolio.map(w => (
+                  <div key={w.id} className="rounded-xl overflow-hidden" style={cardStyle}>
+                    <div className="aspect-[4/3] bg-white/5 relative">
+                      {w.image_url && <img src={w.image_url} alt={w.title} className="w-full h-full object-cover" />}
+                      {!w.active && <span className="absolute top-2 left-2 text-xs px-2 py-0.5 rounded-full bg-black/60 text-white/70">скрыта</span>}
+                    </div>
+                    <div className="p-3 flex items-center justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="text-xs" style={{ color: w.color }}>{w.category}</div>
+                        <div className="font-semibold text-sm truncate">{w.title}</div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button onClick={() => setEditingPortfolio({ id: w.id, title: w.title, category: w.category, image_url: w.image_url, color: w.color, active: w.active, sort_order: w.sort_order })}
+                          className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-white transition-colors"><Icon name="Pencil" size={15} /></button>
+                        <button onClick={() => deletePortfolio(w.id)}
+                          className="p-2 rounded-lg hover:bg-white/5 text-white/50 hover:text-red-400 transition-colors"><Icon name="Trash2" size={15} /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {editingPortfolio && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center px-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)' }} onClick={() => setEditingPortfolio(null)}>
+            <div className="w-full max-w-md rounded-2xl p-6 max-h-[90vh] overflow-y-auto" style={{ background: '#12121c', border: '1px solid rgba(168,85,247,0.3)' }} onClick={e => e.stopPropagation()}>
+              <h3 className="font-['Oswald'] font-bold text-xl mb-4">{editingPortfolio.id ? 'Редактировать работу' : 'Новая работа'}</h3>
+              <div className="space-y-3">
+                <div onClick={() => portfolioImgRef.current?.click()}
+                  className="aspect-[4/3] rounded-xl overflow-hidden flex items-center justify-center cursor-pointer relative"
+                  style={{ background: 'rgba(255,255,255,0.05)', border: '1px dashed rgba(255,255,255,0.2)' }}>
+                  {editingPortfolio.image_url
+                    ? <img src={editingPortfolio.image_url} alt="" className="w-full h-full object-cover" />
+                    : <div className="text-center text-white/40 text-sm"><Icon name="ImagePlus" size={28} className="mx-auto mb-1" />Загрузить картинку</div>}
+                  {uploadingImage && <div className="absolute inset-0 flex items-center justify-center bg-black/60 text-white text-sm">Загрузка…</div>}
+                </div>
+                <input ref={portfolioImgRef} type="file" accept="image/*" className="hidden"
+                  onChange={e => { const f = e.target.files?.[0]; if (f) uploadPortfolioImage(f); e.target.value = ''; }} />
+                <input value={editingPortfolio.title} onChange={e => setEditingPortfolio({ ...editingPortfolio, title: e.target.value })} placeholder="Название работы *" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <input value={editingPortfolio.category} onChange={e => setEditingPortfolio({ ...editingPortfolio, category: e.target.value })} placeholder="Категория (напр. Авто, Красота)" className="w-full px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                <div className="flex items-center gap-3">
+                  <label className="text-sm text-white/60">Цвет:</label>
+                  <input type="color" value={editingPortfolio.color} onChange={e => setEditingPortfolio({ ...editingPortfolio, color: e.target.value })} className="w-10 h-10 rounded cursor-pointer bg-transparent" />
+                  <input type="number" value={editingPortfolio.sort_order} onChange={e => setEditingPortfolio({ ...editingPortfolio, sort_order: Number(e.target.value) })} placeholder="Порядок" className="w-24 px-4 py-3 rounded-xl text-white placeholder-white/30 outline-none text-sm" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }} />
+                </div>
+                <label className="flex items-center gap-2 text-sm text-white/70 cursor-pointer">
+                  <input type="checkbox" checked={editingPortfolio.active} onChange={e => setEditingPortfolio({ ...editingPortfolio, active: e.target.checked })} />
+                  Показывать на сайте
+                </label>
+              </div>
+              <div className="flex gap-2 mt-5">
+                <button onClick={() => setEditingPortfolio(null)} className="flex-1 py-3 rounded-xl text-sm font-semibold text-white/60" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)' }}>Отмена</button>
+                <button onClick={savePortfolio} disabled={uploadingImage} className="flex-1 py-3 rounded-xl text-white text-sm font-semibold disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #a855f7, #7c3aed)' }}>Сохранить</button>
               </div>
             </div>
           </div>

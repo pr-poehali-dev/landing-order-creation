@@ -154,4 +154,16 @@ export const api = {
 
   adminDeleteReview: (id: number) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_review', id }) }).then(r => r.json()),
+
+  adminGetPortfolio: () =>
+    fetch(`${URLS.admin}?action=portfolio`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminSavePortfolio: (item: { id?: number; title: string; category: string; image_url: string; color: string; active: boolean; sort_order: number }) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_portfolio', ...item }) }).then(r => r.json()),
+
+  adminDeletePortfolio: (id: number) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_portfolio', id }) }).then(r => r.json()),
+
+  adminUploadImage: (file_name: string, file_data: string) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'upload_image', file_name, file_data }) }).then(r => r.json()),
 };
