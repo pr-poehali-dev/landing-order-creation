@@ -125,31 +125,6 @@ def handler(event: dict, context) -> dict:
     body = json.loads(event.get('body') or '{}')
     notify_type = body.get('type', 'message')
 
-    # selftest — разовая проверка доставки письма команде
-    if notify_type == 'selftest':
-        conn.close()
-        admin_email = os.environ.get('ADMIN_EMAIL', '')
-        if not admin_email:
-            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': False, 'reason': 'no admin email'})}
-        test_html = """
-        <div style="background: linear-gradient(135deg, #4ade80, #22c55e); padding: 28px 32px;">
-          <h1 style="color: #04120a; margin: 0; font-size: 20px; font-weight: 700;">✅ Клиент заполнил чек-лист</h1>
-        </div>
-        <div style="padding: 28px 32px 16px; color: #e0e0e0;">
-          <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Клиент</p>
-          <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #fff;">Тестовый клиент</p>
-          <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
-          <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #fff;">Проверка уведомлений</p>
-          <div style="background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.25); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
-            <p style="margin: 0; font-size: 15px; color: #e0e0e0; line-height: 1.5;">
-              Это тестовое письмо. Так будет выглядеть уведомление, когда клиент полностью заполнит чек-лист брифа.
-            </p>
-          </div>
-        </div>
-        """
-        base_email(admin_email, 'Тест уведомлений — чек-лист заполнен', test_html)
-        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': True})}
-
     # file_uploaded, checklist_done — разрешено для авторизованных клиентов
     if notify_type in ('file_uploaded', 'checklist_done'):
         cur.execute("""
