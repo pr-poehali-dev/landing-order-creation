@@ -3,6 +3,7 @@ export type ChecklistItem = {
   title: string;
   hint: string;
   type: "yesno" | "text";
+  upload?: string;
 };
 
 export type ChecklistGroup = {
@@ -19,7 +20,7 @@ export const CHECKLIST: ChecklistGroup[] = [
       { key: "business_field", title: "Сфера деятельности", hint: "Чем занимается компания, что продаёте", type: "text" },
       { key: "company_name", title: "Название компании / бренда", hint: "Как называется бизнес", type: "text" },
       { key: "target_audience", title: "Кто ваши клиенты", hint: "Возраст, город, чем занимаются, что для них важно", type: "text" },
-      { key: "services_prices", title: "Услуги и цены", hint: "Список услуг или товаров с ценами", type: "text" },
+      { key: "services_prices", title: "Услуги и цены", hint: "Список услуг или товаров с ценами", type: "text", upload: "Если есть готовый прайс-лист — загрузите файл" },
       { key: "advantages", title: "Ваши преимущества", hint: "Почему клиенты должны выбрать именно вас", type: "text" },
       { key: "competitors", title: "Конкуренты / примеры сайтов", hint: "Ссылки на сайты, которые нравятся или не нравятся", type: "text" },
     ],
@@ -49,12 +50,12 @@ export const CHECKLIST: ChecklistGroup[] = [
     title: "Материалы и дизайн",
     icon: "Palette",
     items: [
-      { key: "logo", title: "Логотип есть?", hint: "В хорошем качестве (PNG/SVG). Если нет — можем разработать", type: "yesno" },
-      { key: "brandbook", title: "Фирменные цвета и шрифты?", hint: "Брендбук или пожелания по стилю", type: "yesno" },
-      { key: "design_ready", title: "Готовый дизайн страниц есть?", hint: "Макеты Figma/PSD. Если нет — разработаем с нуля", type: "yesno" },
-      { key: "photos", title: "Фото и видео есть?", hint: "Фото работ, товаров, команды, помещения", type: "yesno" },
-      { key: "texts", title: "Тексты готовы?", hint: "Описания услуг, о компании. Если нет — напишем сами", type: "yesno" },
-      { key: "reviews_materials", title: "Отзывы клиентов есть?", hint: "Скриншоты, тексты, видео отзывов", type: "yesno" },
+      { key: "logo", title: "Логотип есть?", hint: "В хорошем качестве (PNG/SVG). Если нет — можем разработать", type: "yesno", upload: "Загрузите файл логотипа, если он у вас есть" },
+      { key: "brandbook", title: "Фирменные цвета и шрифты?", hint: "Брендбук или пожелания по стилю", type: "yesno", upload: "Загрузите брендбук или гайдлайн, если есть" },
+      { key: "design_ready", title: "Готовый дизайн страниц есть?", hint: "Макеты Figma/PSD. Если нет — разработаем с нуля", type: "yesno", upload: "Загрузите макеты или ссылку на Figma в поле ответа" },
+      { key: "photos", title: "Фото и видео есть?", hint: "Фото работ, товаров, команды, помещения", type: "yesno", upload: "Загрузите фото — можно по одному, файлы попадут в проект" },
+      { key: "texts", title: "Тексты готовы?", hint: "Описания услуг, о компании. Если нет — напишем сами", type: "yesno", upload: "Загрузите документ с текстами, если он готов" },
+      { key: "reviews_materials", title: "Отзывы клиентов есть?", hint: "Скриншоты, тексты, видео отзывов", type: "yesno", upload: "Загрузите скриншоты или файл с отзывами" },
       { key: "style_wishes", title: "Пожелания по стилю", hint: "Строгий, яркий, минималистичный, какие цвета нравятся", type: "text" },
     ],
   },

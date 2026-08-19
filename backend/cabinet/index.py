@@ -155,6 +155,25 @@ def handler(event: dict, context) -> dict:
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
+        # checklist_completed — пометить, что уведомление о заполнении уже отправлено
+        if act == 'checklist_completed':
+            pid = body.get('project_id')
+            if not pid:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id обязателен'})}
+            cur.execute("SELECT user_id, checklist_notified FROM projects WHERE id = %s", (pid,))
+            row = cur.fetchone()
+            if not row or (not is_admin and row[0] != user_id):
+                conn.close()
+                return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Нет доступа'})}
+            if row[1]:
+                conn.close()
+                return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'should_notify': False})}
+            cur.execute("UPDATE projects SET checklist_notified = TRUE WHERE id = %s", (pid,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'should_notify': True})}
+
         # mark_paid — клиент сообщает, что оплатил счёт (ждёт подтверждения)
         if act == 'mark_paid':
             invoice_id = body.get('invoice_id')

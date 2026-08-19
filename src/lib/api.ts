@@ -190,4 +190,10 @@ export const api = {
 
   saveChecklistItem: (project_id: number, item_key: string, status: string, note: string) =>
     fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_checklist_item', project_id, item_key, status, note }) }).then(r => r.json()),
+
+  checklistCompleted: (project_id: number) =>
+    fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'checklist_completed', project_id }) }).then(r => r.json()),
+
+  notifyChecklistDone: (project_id: number) =>
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'checklist_done', project_id }) }).then(r => r.json()).catch(() => null),
 };

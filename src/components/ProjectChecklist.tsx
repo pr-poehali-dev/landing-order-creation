@@ -12,15 +12,22 @@ export default function ProjectChecklist({
   projectId,
   load,
   save,
+  onUpload,
+  onComplete,
 }: {
   projectId: number;
   load: (projectId: number) => Promise<{ checklist?: Answers }>;
   save: (projectId: number, itemKey: string, status: string, note: string) => Promise<unknown>;
+  onUpload?: (file: File, itemTitle: string) => Promise<void>;
+  onComplete?: () => void;
 }) {
   const [answers, setAnswers] = useState<Answers>({});
   const [loading, setLoading] = useState(true);
   const [savingKey, setSavingKey] = useState<string | null>(null);
+  const [uploadingKey, setUploadingKey] = useState<string | null>(null);
+  const [uploadedKeys, setUploadedKeys] = useState<Record<string, string>>({});
   const timers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const completedRef = useRef(false);
 
   useEffect(() => {
     setLoading(true);
@@ -50,12 +57,32 @@ export default function ProjectChecklist({
     timers.current[key] = setTimeout(() => persist(key, next), 700);
   };
 
+  const handleUpload = async (key: string, itemTitle: string, file: File) => {
+    if (!onUpload) return;
+    setUploadingKey(key);
+    try {
+      await onUpload(file, itemTitle);
+      setUploadedKeys(prev => ({ ...prev, [key]: file.name }));
+    } finally {
+      setUploadingKey(null);
+    }
+  };
+
   const filled = CHECKLIST.reduce((sum, g) => sum + g.items.filter(i => {
     const a = answers[i.key];
     if (!a) return false;
     return i.type === "yesno" ? a.status !== "none" : (a.note || "").trim().length > 0;
   }).length, 0);
   const percent = Math.round((filled / CHECKLIST_TOTAL) * 100);
+
+  useEffect(() => {
+    if (loading) return;
+    if (filled === CHECKLIST_TOTAL && !completedRef.current) {
+      completedRef.current = true;
+      onComplete?.();
+    }
+    if (filled < CHECKLIST_TOTAL) completedRef.current = false;
+  }, [filled, loading, onComplete]);
 
   if (loading) return <p className="text-white/40 text-sm">Загрузка чек-листа…</p>;
 
@@ -124,6 +151,27 @@ export default function ProjectChecklist({
                       placeholder={item.type === "yesno" ? "Комментарий (по желанию)" : "Ваш ответ"}
                       className="w-full px-3 py-2 rounded-lg text-white placeholder-white/25 outline-none text-sm resize-y"
                       style={inputStyle} />
+
+                    {item.upload && onUpload && (
+                      <div className="p-3 rounded-lg" style={{ background: "rgba(0,245,255,0.05)", border: "1px dashed rgba(0,245,255,0.25)" }}>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon name="Upload" size={14} style={{ color: "#00f5ff" }} />
+                          <span className="text-xs" style={{ color: "rgba(0,245,255,0.85)" }}>{item.upload}</span>
+                        </div>
+                        <label className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-opacity hover:opacity-80"
+                          style={{ background: "rgba(0,245,255,0.12)", color: "#00f5ff", border: "1px solid rgba(0,245,255,0.3)" }}>
+                          <Icon name={uploadingKey === item.key ? "Loader" : "Paperclip"} size={13} />
+                          {uploadingKey === item.key ? "Загрузка…" : "Выбрать файл"}
+                          <input type="file" className="hidden" disabled={uploadingKey === item.key}
+                            onChange={e => { const f = e.target.files?.[0]; if (f) handleUpload(item.key, item.title, f); e.target.value = ""; }} />
+                        </label>
+                        {uploadedKeys[item.key] && (
+                          <p className="text-emerald-400 text-xs mt-2 flex items-center gap-1">
+                            <Icon name="Check" size={12} /> Загружено: {uploadedKeys[item.key]}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

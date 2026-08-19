@@ -125,8 +125,8 @@ def handler(event: dict, context) -> dict:
     body = json.loads(event.get('body') or '{}')
     notify_type = body.get('type', 'message')
 
-    # file_uploaded — разрешено для авторизованных клиентов
-    if notify_type == 'file_uploaded':
+    # file_uploaded, checklist_done — разрешено для авторизованных клиентов
+    if notify_type in ('file_uploaded', 'checklist_done'):
         cur.execute("""
             SELECT u.id FROM sessions s JOIN users u ON s.user_id = u.id
             WHERE s.id = %s AND s.expires_at > NOW()
@@ -201,6 +201,29 @@ def handler(event: dict, context) -> dict:
         </div>
         """
         base_email(admin_email, f'Новый файл от клиента «{name}» — {project_title}', body_html)
+
+    # Уведомление команде: клиент полностью заполнил чек-лист брифа
+    elif notify_type == 'checklist_done':
+        admin_email = os.environ.get('ADMIN_EMAIL', '')
+        if not admin_email:
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': False, 'reason': 'no admin email'})}
+        body_html = f"""
+        <div style="background: linear-gradient(135deg, #4ade80, #22c55e); padding: 28px 32px;">
+          <h1 style="color: #04120a; margin: 0; font-size: 20px; font-weight: 700;">✅ Клиент заполнил чек-лист</h1>
+        </div>
+        <div style="padding: 28px 32px 16px; color: #e0e0e0;">
+          <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Клиент</p>
+          <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #fff;">{name}</p>
+          <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
+          <p style="margin: 0 0 16px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
+          <div style="background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.25); border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+            <p style="margin: 0; font-size: 15px; color: #e0e0e0; line-height: 1.5;">
+              Бриф заполнен полностью — все данные для старта работ собраны. Откройте проект и проверьте ответы во вкладке «Чек-лист».
+            </p>
+          </div>
+        </div>
+        """
+        base_email(admin_email, f'Чек-лист заполнен — «{project_title}» ({name})', body_html)
 
     else:
         return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'Неизвестный тип уведомления'})}

@@ -221,6 +221,32 @@ export default function Cabinet() {
     reader.readAsDataURL(file);
   };
 
+  const uploadChecklistFile = async (file: File, itemTitle: string) => {
+    if (!active) return;
+    const base64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve((reader.result as string).split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+    const res = await api.uploadFile(active.id, file.name, base64);
+    if (res.url) {
+      const text = `Материалы по пункту «${itemTitle}»`;
+      const msgRes = await api.sendMessage(active.id, text);
+      setMessages(prev => [...prev, msgRes]);
+      const fileText = res.file_type === 'image' ? `[img:${res.url}]` : `[file:${res.url}:${res.name}]`;
+      const fileMsg = await api.sendMessage(active.id, fileText);
+      setMessages(prev => [...prev, fileMsg]);
+      api.notifyFileUploaded(active.id, file.name, res.url);
+    }
+  };
+
+  const handleChecklistComplete = async () => {
+    if (!active) return;
+    const res = await api.checklistCompleted(active.id);
+    if (res?.should_notify) api.notifyChecklistDone(active.id);
+  };
+
   const logout = async () => {
     await api.logout();
     localStorage.removeItem('session_id');
@@ -503,6 +529,8 @@ export default function Cabinet() {
                       projectId={active.id}
                       load={api.getChecklist}
                       save={api.saveChecklistItem}
+                      onUpload={uploadChecklistFile}
+                      onComplete={handleChecklistComplete}
                     />
                   </div>
                 )}
