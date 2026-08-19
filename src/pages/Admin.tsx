@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { setFavicon } from '@/lib/favicon';
 import { playNotification } from '@/lib/notification';
 import Icon from '@/components/ui/icon';
+import ProjectChecklist from '@/components/ProjectChecklist';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'Новый' },
@@ -25,7 +26,7 @@ export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [subTab, setSubTab] = useState<'messages' | 'files' | 'invoices'>('messages');
+  const [subTab, setSubTab] = useState<'messages' | 'files' | 'invoices' | 'checklist'>('messages');
   const [messages, setMessages] = useState<{id:number;text:string;author:string;is_admin:boolean}[]>([]);
   const [files, setFiles] = useState<{id:number;name:string;url:string;file_type:string}[]>([]);
   const [invoices, setInvoices] = useState<{id:number;title:string;amount:number;status:string;file_url:string}[]>([]);
@@ -208,7 +209,7 @@ export default function Admin() {
     openProjectRef.current = openProject;
   });
 
-  const loadSubTab = async (t: 'messages' | 'files' | 'invoices') => {
+  const loadSubTab = async (t: 'messages' | 'files' | 'invoices' | 'checklist') => {
     if (!selectedProject) return;
     setSubTab(t);
     if (t === 'messages') {
@@ -991,13 +992,13 @@ export default function Admin() {
 
                   {/* Sub-tabs */}
                   <div className="flex" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    {(['messages', 'files', 'invoices'] as const).map(t => {
+                    {(['messages', 'files', 'invoices', 'checklist'] as const).map(t => {
                       const tabUnread = t === 'messages' && subTab !== 'messages' && (unread[selectedProject.id] || 0) > 0;
                       return (
                         <button key={t} onClick={() => loadSubTab(t)}
                           className="flex-1 py-3 text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
                           style={{ color: subTab === t ? '#a855f7' : 'rgba(255,255,255,0.4)', borderBottom: subTab === t ? '2px solid #a855f7' : '2px solid transparent' }}>
-                          {t === 'messages' ? 'Чат' : t === 'files' ? 'Файлы' : 'Счета'}
+                          {t === 'messages' ? 'Чат' : t === 'files' ? 'Файлы' : t === 'invoices' ? 'Счета' : 'Чек-лист'}
                           {tabUnread && (
                             <span className="text-xs font-bold px-1.5 py-0.5 rounded-full leading-none"
                               style={{ background: '#a855f7', color: 'white' }}>
@@ -1171,6 +1172,14 @@ export default function Admin() {
                           ))}
                         </div>
                       </div>
+                    )}
+
+                    {subTab === 'checklist' && (
+                      <ProjectChecklist
+                        projectId={selectedProject.id}
+                        load={api.adminGetChecklist}
+                        save={api.adminSaveChecklistItem}
+                      />
                     )}
                   </div>
                 </div>

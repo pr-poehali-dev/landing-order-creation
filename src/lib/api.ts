@@ -178,4 +178,16 @@ export const api = {
 
   adminDeleteArticle: (id: number) =>
     fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'delete_article', id }) }).then(r => r.json()),
+
+  adminGetChecklist: (projectId: number) =>
+    fetch(`${URLS.admin}?action=checklist&project_id=${projectId}`, { headers: authHeaders() }).then(r => r.json()),
+
+  adminSaveChecklistItem: (project_id: number, item_key: string, status: string, note: string) =>
+    fetch(URLS.admin, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_checklist_item', project_id, item_key, status, note }) }).then(r => r.json()),
+
+  getChecklist: (projectId: number) =>
+    fetch(`${URLS.cabinet}?action=checklist&project_id=${projectId}`, { headers: authHeaders() }).then(r => r.json()),
+
+  saveChecklistItem: (project_id: number, item_key: string, status: string, note: string) =>
+    fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'save_checklist_item', project_id, item_key, status, note }) }).then(r => r.json()),
 };

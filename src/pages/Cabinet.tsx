@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { setFavicon } from '@/lib/favicon';
 import { playNotification } from '@/lib/notification';
 import Icon from '@/components/ui/icon';
+import ProjectChecklist from '@/components/ProjectChecklist';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   new: { label: 'Новый', color: '#a855f7' },
@@ -22,7 +23,7 @@ export default function Cabinet() {
   const [user, setUser] = useState<{ name: string; email: string } | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [active, setActive] = useState<Project | null>(null);
-  const [tab, setTab] = useState<'messages' | 'files' | 'invoices'>('messages');
+  const [tab, setTab] = useState<'messages' | 'files' | 'invoices' | 'checklist'>('messages');
   const [messages, setMessages] = useState<Message[]>([]);
   const [files, setFiles] = useState<FileItem[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -149,7 +150,7 @@ export default function Cabinet() {
     }
   };
 
-  const switchTab = (t: 'messages' | 'files' | 'invoices') => {
+  const switchTab = (t: 'messages' | 'files' | 'invoices' | 'checklist') => {
     setTab(t);
     if (active) loadTab(t, active.id);
   };
@@ -337,7 +338,7 @@ export default function Cabinet() {
 
               {/* Tabs */}
               <div className="flex" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                {([['messages', 'MessageSquare', 'Переписка'], ['files', 'Paperclip', 'Файлы'], ['invoices', 'Receipt', 'Счета']] as const).map(([t, icon, label]) => (
+                {([['messages', 'MessageSquare', 'Переписка'], ['files', 'Paperclip', 'Файлы'], ['invoices', 'Receipt', 'Счета'], ['checklist', 'ListChecks', 'Чек-лист']] as const).map(([t, icon, label]) => (
                   <button key={t} onClick={() => switchTab(t)}
                     className="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-colors"
                     style={{ color: tab === t ? '#a855f7' : 'rgba(255,255,255,0.4)', borderBottom: tab === t ? '2px solid #a855f7' : '2px solid transparent' }}>
@@ -469,6 +470,19 @@ export default function Cabinet() {
                         )}
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {tab === 'checklist' && (
+                  <div>
+                    <p className="text-white/50 text-sm mb-5">
+                      Заполните чек-лист — так мы быстрее соберём всё необходимое и запустим ваш сайт в срок.
+                    </p>
+                    <ProjectChecklist
+                      projectId={active.id}
+                      load={api.getChecklist}
+                      save={api.saveChecklistItem}
+                    />
                   </div>
                 )}
               </div>

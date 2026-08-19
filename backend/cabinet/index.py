@@ -68,6 +68,18 @@ def handler(event: dict, context) -> dict:
         projects = [{'id': r[0], 'user_id': r[1], 'title': r[2], 'status': r[3], 'description': r[4], 'created_at': json_serial(r[5]), 'updated_at': json_serial(r[6])} for r in rows]
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'projects': projects})}
 
+    # GET ?action=checklist&project_id=X — чек-лист брифа
+    if method == 'GET' and action == 'checklist' and project_id:
+        cur.execute("SELECT user_id FROM projects WHERE id = %s", (project_id,))
+        owner = cur.fetchone()
+        if not owner or (not is_admin and owner[0] != user_id):
+            conn.close()
+            return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Нет доступа'})}
+        cur.execute("SELECT item_key, status, note FROM project_checklist WHERE project_id = %s", (project_id,))
+        items = {r[0]: {'status': r[1], 'note': r[2]} for r in cur.fetchall()}
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'checklist': items})}
+
     # GET ?action=files&project_id=X
     if method == 'GET' and action == 'files' and project_id:
         cur.execute("SELECT id, name, url, file_type, uploaded_at FROM project_files WHERE project_id = %s ORDER BY uploaded_at DESC", (project_id,))
@@ -118,6 +130,30 @@ def handler(event: dict, context) -> dict:
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'id': row[0], 'created_at': json_serial(row[1]), 'author': user_name, 'is_admin': is_admin, 'text': text})}
+
+        # save_checklist_item — клиент заполняет пункт чек-листа брифа
+        if act == 'save_checklist_item':
+            pid = body.get('project_id')
+            item_key = body.get('item_key', '').strip()
+            status = body.get('status', 'none')
+            note = body.get('note', '')
+            if not pid or not item_key:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id и item_key обязательны'})}
+            cur.execute("SELECT user_id FROM projects WHERE id = %s", (pid,))
+            owner = cur.fetchone()
+            if not owner or (not is_admin and owner[0] != user_id):
+                conn.close()
+                return {'statusCode': 403, 'headers': cors, 'body': json.dumps({'error': 'Нет доступа'})}
+            cur.execute("""
+                INSERT INTO project_checklist (project_id, item_key, status, note)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (project_id, item_key)
+                DO UPDATE SET status = EXCLUDED.status, note = EXCLUDED.note, updated_at = NOW()
+            """, (pid, item_key, status, note))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
 
         # mark_paid — клиент сообщает, что оплатил счёт (ждёт подтверждения)
         if act == 'mark_paid':

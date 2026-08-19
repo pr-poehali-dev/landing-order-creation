@@ -221,6 +221,16 @@ def handler(event: dict, context) -> dict:
         items = [{'id': r[0], 'title': r[1], 'category': r[2], 'image_url': r[3], 'color': r[4], 'active': r[5], 'sort_order': r[6]} for r in rows]
         return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'portfolio': items})}
 
+    # GET ?action=checklist&project_id=X — чек-лист брифа проекта
+    if method == 'GET' and action == 'checklist':
+        project_id = params.get('project_id')
+        cur.execute("""
+            SELECT item_key, status, note FROM project_checklist WHERE project_id = %s
+        """, (project_id,))
+        items = {r[0]: {'status': r[1], 'note': r[2]} for r in cur.fetchall()}
+        conn.close()
+        return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'checklist': items})}
+
     # GET ?action=articles — все статьи (для админки)
     if method == 'GET' and action == 'articles':
         cur.execute("""
@@ -607,6 +617,25 @@ def handler(event: dict, context) -> dict:
                 conn.close()
                 return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'id обязателен'})}
             cur.execute("DELETE FROM portfolio WHERE id = %s", (item_id,))
+            conn.commit()
+            conn.close()
+            return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
+
+        # save_checklist_item — сохранить ответ чек-листа по проекту
+        if act == 'save_checklist_item':
+            project_id = body.get('project_id')
+            item_key = body.get('item_key', '').strip()
+            status = body.get('status', 'none')
+            note = body.get('note', '')
+            if not project_id or not item_key:
+                conn.close()
+                return {'statusCode': 400, 'headers': cors, 'body': json.dumps({'error': 'project_id и item_key обязательны'})}
+            cur.execute("""
+                INSERT INTO project_checklist (project_id, item_key, status, note)
+                VALUES (%s, %s, %s, %s)
+                ON CONFLICT (project_id, item_key)
+                DO UPDATE SET status = EXCLUDED.status, note = EXCLUDED.note, updated_at = NOW()
+            """, (project_id, item_key, status, note))
             conn.commit()
             conn.close()
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'ok': True})}
