@@ -5,6 +5,7 @@ import { setFavicon } from '@/lib/favicon';
 import { playNotification } from '@/lib/notification';
 import Icon from '@/components/ui/icon';
 import ProjectChecklist from '@/components/ProjectChecklist';
+import { createCallUrl, parseCallUrl, CALL_PREFIX } from '@/lib/videocall';
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   new: { label: 'Новый', color: '#a855f7' },
@@ -166,6 +167,15 @@ export default function Cabinet() {
     const res = await api.sendMessage(active.id, msgText);
     setMessages(prev => [...prev, res]);
     setMsgText('');
+  };
+
+  const startVideoCall = async () => {
+    if (!active) return;
+    const url = createCallUrl(active.id);
+    const res = await api.sendMessage(active.id, `${CALL_PREFIX}${url}]`);
+    setMessages(prev => [...prev, res]);
+    api.notifyIfOffline(active.id, 'Приглашение на видеозвонок');
+    window.open(url, '_blank', 'noopener');
   };
 
   const [uploadingFile, setUploadingFile] = useState(false);
@@ -361,7 +371,13 @@ export default function Cabinet() {
                               ? { background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.2)' }
                               : { background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)' }}>
                             {m.is_admin && <div className="text-xs text-purple-400 mb-1 font-semibold">Команда</div>}
-                            {m.text.startsWith('[img:') ? (
+                            {parseCallUrl(m.text) ? (
+                              <a href={parseCallUrl(m.text)!} target="_blank" rel="noreferrer"
+                                className="flex items-center gap-2 px-3 py-2 rounded-xl mt-1 font-semibold text-sm transition-opacity hover:opacity-85"
+                                style={{ background: 'linear-gradient(135deg, #00f5ff, #0891b2)', color: '#04121a' }}>
+                                <Icon name="Video" size={15} /> Подключиться к видеозвонку
+                              </a>
+                            ) : m.text.startsWith('[img:') ? (
                               <a href={m.text.slice(5, -1)} target="_blank" rel="noreferrer">
                                 <img src={m.text.slice(5, -1)} alt="img" className="max-w-[220px] rounded-xl mt-1" />
                               </a>
@@ -390,6 +406,11 @@ export default function Cabinet() {
                         className="px-3 py-3 rounded-xl transition-opacity hover:opacity-80"
                         style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                         <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={16} className="text-white/50" />
+                      </button>
+                      <button onClick={startVideoCall} title="Начать видеозвонок с командой"
+                        className="px-3 py-3 rounded-xl transition-opacity hover:opacity-80"
+                        style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.25)' }}>
+                        <Icon name="Video" size={16} style={{ color: '#00f5ff' }} />
                       </button>
                       <input value={msgText} onChange={e => {
                           setMsgText(e.target.value);

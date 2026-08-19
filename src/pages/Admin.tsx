@@ -5,6 +5,7 @@ import { setFavicon } from '@/lib/favicon';
 import { playNotification } from '@/lib/notification';
 import Icon from '@/components/ui/icon';
 import ProjectChecklist from '@/components/ProjectChecklist';
+import { createCallUrl, parseCallUrl, CALL_PREFIX } from '@/lib/videocall';
 
 const STATUS_OPTIONS = [
   { value: 'new', label: 'Новый' },
@@ -227,6 +228,16 @@ export default function Admin() {
     setMessages(prev => [...prev, { ...res, is_admin: true, author: 'Команда', text }]);
     setMsgText('');
     api.notifyIfOffline(selectedProject.id, text);
+  };
+
+  const startVideoCall = async () => {
+    if (!selectedProject) return;
+    const url = createCallUrl(selectedProject.id);
+    const text = `${CALL_PREFIX}${url}]`;
+    const res = await api.adminSendMessage(selectedProject.id, text);
+    setMessages(prev => [...prev, { ...res, is_admin: true, author: 'Команда', text }]);
+    api.notifyIfOffline(selectedProject.id, 'Приглашение на видеозвонок');
+    window.open(url, '_blank', 'noopener');
   };
 
   const handleAdminFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1024,7 +1035,13 @@ export default function Admin() {
                                 <div className="text-xs mb-1 font-semibold" style={{ color: m.is_admin ? '#a855f7' : '#00f5ff' }}>
                                   {m.is_admin ? 'Команда' : m.author}
                                 </div>
-                                {m.text.startsWith('[img:') ? (
+                                {parseCallUrl(m.text) ? (
+                                  <a href={parseCallUrl(m.text)!} target="_blank" rel="noreferrer"
+                                    className="flex items-center gap-2 px-3 py-2 rounded-xl mt-1 font-semibold text-sm transition-opacity hover:opacity-85"
+                                    style={{ background: 'linear-gradient(135deg, #00f5ff, #0891b2)', color: '#04121a' }}>
+                                    <Icon name="Video" size={15} /> Подключиться к видеозвонку
+                                  </a>
+                                ) : m.text.startsWith('[img:') ? (
                                   <a href={m.text.slice(5, -1)} target="_blank" rel="noreferrer">
                                     <img src={m.text.slice(5, -1)} alt="img" className="max-w-[220px] rounded-xl mt-1" />
                                   </a>
@@ -1053,6 +1070,11 @@ export default function Admin() {
                             className="px-3 py-3 rounded-xl transition-opacity hover:opacity-80"
                             style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)' }}>
                             <Icon name={uploadingFile ? 'Loader' : 'Paperclip'} size={16} className="text-white/50" />
+                          </button>
+                          <button onClick={startVideoCall} title="Начать видеозвонок с клиентом"
+                            className="px-3 py-3 rounded-xl transition-opacity hover:opacity-80"
+                            style={{ background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.25)' }}>
+                            <Icon name="Video" size={16} style={{ color: '#00f5ff' }} />
                           </button>
                           <input value={msgText} onChange={e => {
                               setMsgText(e.target.value);
