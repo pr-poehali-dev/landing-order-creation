@@ -194,6 +194,9 @@ export const api = {
   checklistCompleted: (project_id: number) =>
     fetch(URLS.cabinet, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ action: 'checklist_completed', project_id }) }).then(r => r.json()),
 
+  notifyCall: (project_id: number, call_url: string) =>
+    fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'call', project_id, call_url }) }).then(r => r.json()).catch(() => null),
+
   notifyChecklistDone: (project_id: number) =>
     fetch(URLS.notify, { method: 'POST', headers: authHeaders(), body: JSON.stringify({ type: 'checklist_done', project_id }) }).then(r => r.json()).catch(() => null),
 };

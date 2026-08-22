@@ -70,6 +70,25 @@ def send_message_email(to_email: str, project_title: str, message_text: str):
     base_email(to_email, f'Новое сообщение по проекту «{project_title}»', body)
 
 
+def send_call_email(to_email: str, project_title: str, call_url: str):
+    body = f"""
+    <div style="background: linear-gradient(135deg, #00f5ff, #0891b2); padding: 28px 32px;">
+      <h1 style="color: #04121a; margin: 0; font-size: 20px; font-weight: 700;">📹 Приглашение на видеозвонок</h1>
+    </div>
+    <div style="padding: 28px 32px 16px; color: #e0e0e0;">
+      <p style="margin: 0 0 4px 0; color: #a0a0b0; font-size: 14px;">Проект</p>
+      <p style="margin: 0 0 20px 0; font-size: 16px; font-weight: 600; color: #fff;">{project_title}</p>
+      <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.5;">Команда приглашает вас на видеозвонок. Нажмите кнопку ниже — звонок откроется прямо в браузере, ничего устанавливать не нужно.</p>
+      <a href="{call_url}"
+         style="display: inline-block; background: linear-gradient(135deg, #00f5ff, #0891b2); color: #04121a; text-decoration: none; padding: 14px 32px; border-radius: 10px; font-weight: 700; font-size: 16px; margin-bottom: 20px;">
+        Подключиться к видеозвонку →
+      </a>
+      <p style="margin: 0 0 24px 0; font-size: 12px; color: #888;">Если кнопка не открывается, скопируйте ссылку: {call_url}</p>
+    </div>
+    """
+    base_email(to_email, f'Видеозвонок по проекту «{project_title}»', body)
+
+
 def send_status_email(to_email: str, project_title: str, status: str):
     label = STATUS_LABELS.get(status, status)
     color = {'new': '#a855f7', 'in_progress': '#00f5ff', 'review': '#facc15', 'done': '#4ade80'}.get(status, '#a855f7')
@@ -169,6 +188,10 @@ def handler(event: dict, context) -> dict:
         if not offline:
             return {'statusCode': 200, 'headers': cors, 'body': json.dumps({'sent': False, 'reason': 'online'})}
         send_message_email(email, project_title, body.get('message_text', ''))
+
+    # Приглашение на видеозвонок — всегда
+    elif notify_type == 'call':
+        send_call_email(email, project_title, body.get('call_url', ''))
 
     # Для статуса — всегда
     elif notify_type == 'status':

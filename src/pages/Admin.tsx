@@ -236,7 +236,7 @@ export default function Admin() {
     const text = `${CALL_PREFIX}${url}]`;
     const res = await api.adminSendMessage(selectedProject.id, text);
     setMessages(prev => [...prev, { ...res, is_admin: true, author: 'Команда', text }]);
-    api.notifyIfOffline(selectedProject.id, 'Приглашение на видеозвонок');
+    api.notifyCall(selectedProject.id, url);
     window.open(url, '_blank', 'noopener');
   };
 
