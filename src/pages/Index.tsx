@@ -245,9 +245,8 @@ function PrivacyModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function useReveal() {
+function useReveal(deps: unknown[] = []) {
   useEffect(() => {
-    const els = document.querySelectorAll(".section-reveal");
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -256,9 +255,17 @@ function useReveal() {
       },
       { threshold: 0.1 }
     );
-    els.forEach((el) => obs.observe(el));
-    return () => obs.disconnect();
-  }, []);
+    const observeAll = () => {
+      document.querySelectorAll(".section-reveal:not(.visible)").forEach((el) => obs.observe(el));
+    };
+    observeAll();
+    const t = setTimeout(observeAll, 300);
+    return () => {
+      clearTimeout(t);
+      obs.disconnect();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, deps);
 }
 
 function StarRating({ count }: { count: number }) {
@@ -272,7 +279,6 @@ function StarRating({ count }: { count: number }) {
 }
 
 export default function Index({ city }: { city?: City }) {
-  useReveal();
   const [form, setForm] = useState({ name: "", phone: "", email: "", comment: "" });
   const [consent, setConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -286,6 +292,8 @@ export default function Index({ city }: { city?: City }) {
   const [promos, setPromos] = useState<{ id: number; title: string; description: string; badge: string; old_price: string; new_price: string }[]>([]);
   const [reviews, setReviews] = useState<{ name: string; role: string; text: string; rating: number; avatar: string }[]>(REVIEWS);
   const formRef = useRef<HTMLDivElement>(null);
+
+  useReveal([promos.length, reviews.length, portfolio.length]);
 
   useEffect(() => {
     fetch('https://functions.poehali.dev/3ce65aba-6279-4e65-a710-af47b06c9b6c?action=public')
